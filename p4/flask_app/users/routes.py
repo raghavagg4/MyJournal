@@ -61,47 +61,29 @@ def account():
     update_username_form = UpdateUsernameForm()
     update_profile_pic_form = UpdateProfilePicForm()
 
-    if request.method == "POST":
-        if update_username_form.submit_username.data and update_username_form.validate():
-            current_user.modify(username=update_username_form.username.data)
-            current_user.save()
-            flash("Username has been updated!")
+    if update_username_form.validate_on_submit():
+        current_user.modify(username=update_username_form.username.data)
+        current_user.save()
+        return redirect(url_for("users.account"))
+
+    if update_profile_pic_form.validate_on_submit():
+        img = update_profile_pic_form.picture.data
+        content_type = img.content_type
+
+        if content_type not in ["image/jpeg", "image/png"]:
+            flash("Invalid image type! Please upload a JPEG or PNG image.")
             return redirect(url_for("users.account"))
 
-        if update_profile_pic_form.submit_picture.data and update_profile_pic_form.validate():
-            # Get the uploaded image data
-            image = update_profile_pic_form.picture.data
-            if image:
-                image_data = image.read()
-                if image_data:  # Ensure we have actual image data
-                    # Store the binary image data directly in MongoDB
-                    current_user.modify(profile_pic=image_data)
-                    current_user.save()
+        img_data = BytesIO()
+        img.save(img_data)
 
-                    # Flash appropriate message based on whether user had a profile pic
-                    if current_user.profile_pic:
-                        flash("Profile picture has been updated!")
-                    else:
-                        flash("Profile picture has been added!")
-
-                    # Verify the image was saved correctly
-                    user = User.objects(username=current_user.username).first()
-                    if not user or not user.profile_pic:
-                        flash("Error: Profile picture was not saved properly. Please try again.")
-                else:
-                    flash("Unable to read image data. Please try again.")
-            return redirect(url_for("users.account"))
+        current_user.modify(profile_pic=img_data.getvalue())
+        current_user.save()
+        return redirect(url_for("users.account"))
 
     image = None
     if current_user.profile_pic:
-        # Convert binary data to base64 for display in HTML
-        bytes_im = BytesIO(current_user.profile_pic)
-        image = base64.b64encode(bytes_im.getvalue()).decode()
-    else:
-        # Use sample picture when profile pic is None (for display only)
-        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
-            bytes_im = BytesIO(f.read())
-            image = base64.b64encode(bytes_im.getvalue()).decode()
+        image = base64.b64encode(current_user.profile_pic).decode("utf-8")
 
     return render_template(
         "account.html",
