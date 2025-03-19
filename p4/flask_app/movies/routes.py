@@ -83,9 +83,9 @@ def movie_detail(movie_id):
         try:
             review_dict['image'] = get_b64_img(review.commenter.username)
         except Exception as e:
-            # Handle case where profile picture might be corrupted or missing
-            flash(f"Could not load profile picture: {str(e)}")
-            pass
+            with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
+                bytes_im = BytesIO(f.read())
+                review_dict['image'] = base64.b64encode(bytes_im.getvalue()).decode()
 
         reviews_with_images.append(review_dict)
 
@@ -107,9 +107,9 @@ def user_detail(username):
     try:
         image = get_b64_img(username)
     except Exception as e:
-        # Handle case where profile picture might be corrupted or missing
-        flash(f"Could not load profile picture: {str(e)}")
-        pass
+        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
+            bytes_im = BytesIO(f.read())
+            image = base64.b64encode(bytes_im.getvalue()).decode()
 
     return render_template(
         "user_detail.html",

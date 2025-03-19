@@ -74,16 +74,14 @@ def account():
             if image:
                 image_data = image.read()
                 if image_data:  # Ensure we have actual image data
-                    # Handle the two cases: replacing vs adding a profile picture
+                    # Store the binary image data directly in MongoDB
+                    current_user.modify(profile_pic=image_data)
+                    current_user.save()
+
+                    # Flash appropriate message based on whether user had a profile pic
                     if current_user.profile_pic:
-                        # Case 1: User already has a profile picture - replace it
-                        current_user.modify(profile_pic=image_data)
-                        current_user.save()
                         flash("Profile picture has been updated!")
                     else:
-                        # Case 2: User doesn't have a profile picture - add the uploaded one
-                        current_user.modify(profile_pic=image_data)
-                        current_user.save()
                         flash("Profile picture has been added!")
 
                     # Verify the image was saved correctly
@@ -96,6 +94,7 @@ def account():
 
     image = None
     if current_user.profile_pic:
+        # Convert binary data to base64 for display in HTML
         bytes_im = BytesIO(current_user.profile_pic)
         image = base64.b64encode(bytes_im.getvalue()).decode()
     else:
