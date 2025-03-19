@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, url_for, render_template, flash, request
 from flask_login import current_user, login_required, login_user, logout_user
 import base64
+import os
 from io import BytesIO
 from .. import bcrypt
 from werkzeug.utils import secure_filename
@@ -70,15 +71,24 @@ def account():
         if update_profile_pic_form.submit_picture.data and update_profile_pic_form.validate():
             image = update_profile_pic_form.picture.data
             if image:
-                current_user.modify(profile_pic=image.read())
-                current_user.save()
-                flash("Profile picture has been updated!")
+                image_data = image.read()
+                if image_data:  # Ensure we have actual image data
+                    current_user.modify(profile_pic=image_data)
+                    current_user.save()
+                    flash("Profile picture has been updated!")
+                else:
+                    flash("Unable to read image data. Please try again.")
             return redirect(url_for("users.account"))
 
     image = None
     if current_user.profile_pic:
         bytes_im = BytesIO(current_user.profile_pic)
         image = base64.b64encode(bytes_im.getvalue()).decode()
+    else:
+        # Use sample picture when profile pic is None
+        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
+            bytes_im = BytesIO(f.read())
+            image = base64.b64encode(bytes_im.getvalue()).decode()
 
     return render_template(
         "account.html",

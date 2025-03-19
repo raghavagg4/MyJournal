@@ -2,6 +2,7 @@ import base64,io
 from io import BytesIO
 from flask import Blueprint, render_template, url_for, redirect, request, flash
 from flask_login import current_user
+import os
 
 from .. import movie_client
 from ..forms import MovieReviewForm, SearchForm
@@ -13,8 +14,12 @@ movies = Blueprint("movies", __name__)
 def get_b64_img(username):
     user = User.objects(username=username).first()
     if not user or not user.profile_pic:
-        return None
-    bytes_im = io.BytesIO(user.profile_pic)
+        # Use sample picture when profile pic is None
+        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
+            bytes_im = io.BytesIO(f.read())
+    else:
+        bytes_im = io.BytesIO(user.profile_pic)
+
     image = base64.b64encode(bytes_im.getvalue()).decode()
     return image
 
@@ -76,8 +81,7 @@ def movie_detail(movie_id):
         }
 
         try:
-            if review.commenter.profile_pic:
-                review_dict['image'] = get_b64_img(review.commenter.username)
+            review_dict['image'] = get_b64_img(review.commenter.username)
         except Exception as e:
             # Handle case where profile picture might be corrupted or missing
             flash(f"Could not load profile picture: {str(e)}")
@@ -100,13 +104,12 @@ def user_detail(username):
     reviews = Review.objects(commenter=user)
 
     image = None
-    if user.profile_pic:
-        try:
-            image = get_b64_img(username)
-        except Exception as e:
-            # Handle case where profile picture might be corrupted or missing
-            flash(f"Could not load profile picture: {str(e)}")
-            pass
+    try:
+        image = get_b64_img(username)
+    except Exception as e:
+        # Handle case where profile picture might be corrupted or missing
+        flash(f"Could not load profile picture: {str(e)}")
+        pass
 
     return render_template(
         "user_detail.html",
