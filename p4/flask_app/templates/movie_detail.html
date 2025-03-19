@@ -29,7 +29,7 @@
     <ul class="review-container">
       {% for review in reviews %}
         <li class="review flex gap-2">
-          <img class="h-20 w-20 rounded-lg" src="data:image/png;base64,{{review.image}}" alt="" />
+          <img class="h-20 w-20 rounded-lg" src="data:{{ review.content_type }};base64,{{review.image}}" alt="" />
           <div class="w-full">
             <span class="review-date">{{ review.date }}</span>
             <a class="review-commenter" href="{{ url_for('movies.user_detail', username=review.commenter.username) }}">

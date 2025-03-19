@@ -77,17 +77,21 @@ def account():
         img_data = BytesIO()
         img.save(img_data)
 
-        current_user.modify(profile_pic=img_data.getvalue())
+        current_user.modify(profile_pic=img_data.getvalue(), profile_pic_content_type=content_type)
         current_user.save()
         return redirect(url_for("users.account"))
 
     image = None
+    content_type = "image/png"  # Default content type
     if current_user.profile_pic:
         image = base64.b64encode(current_user.profile_pic).decode("utf-8")
+        if current_user.profile_pic_content_type:
+            content_type = current_user.profile_pic_content_type
 
     return render_template(
         "account.html",
         update_username_form=update_username_form,
         update_profile_pic_form=update_profile_pic_form,
-        image=image
+        image=image,
+        content_type=content_type
     )

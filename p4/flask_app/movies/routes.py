@@ -13,15 +13,19 @@ movies = Blueprint("movies", __name__)
 """ ************ Helper for pictures uses username to get their profile picture************ """
 def get_b64_img(username):
     user = User.objects(username=username).first()
+    content_type = "image/jpeg"  # Default for sample image
+
     if not user or not user.profile_pic:
         # Use sample picture when profile pic is None
         with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
             bytes_im = io.BytesIO(f.read())
     else:
         bytes_im = io.BytesIO(user.profile_pic)
+        if user.profile_pic_content_type:
+            content_type = user.profile_pic_content_type
 
     image = base64.b64encode(bytes_im.getvalue()).decode()
-    return image
+    return image, content_type
 
 """ ************ View functions ************ """
 
@@ -81,11 +85,12 @@ def movie_detail(movie_id):
         }
 
         try:
-            review_dict['image'] = get_b64_img(review.commenter.username)
+            review_dict['image'], review_dict['content_type'] = get_b64_img(review.commenter.username)
         except Exception as e:
             with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
                 bytes_im = BytesIO(f.read())
                 review_dict['image'] = base64.b64encode(bytes_im.getvalue()).decode()
+                review_dict['content_type'] = "image/jpeg"
 
         reviews_with_images.append(review_dict)
 
@@ -105,15 +110,17 @@ def user_detail(username):
 
     image = None
     try:
-        image = get_b64_img(username)
+        image, content_type = get_b64_img(username)
     except Exception as e:
         with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
             bytes_im = BytesIO(f.read())
             image = base64.b64encode(bytes_im.getvalue()).decode()
+            content_type = "image/jpeg"
 
     return render_template(
         "user_detail.html",
         username=username,
         reviews=reviews,
-        image=image
+        image=image,
+        content_type=content_type
     )
