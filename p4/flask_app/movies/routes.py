@@ -12,7 +12,7 @@ movies = Blueprint("movies", __name__)
 """ ************ Helper for pictures uses username to get their profile picture************ """
 def get_b64_img(username):
     user = User.objects(username=username).first()
-    bytes_im = io.BytesIO(user.profile_pic.read())
+    bytes_im = io.BytesIO(user.profile_pic)
     image = base64.b64encode(bytes_im.getvalue()).decode()
     return image
 
@@ -62,14 +62,51 @@ def movie_detail(movie_id):
 
     reviews = Review.objects(imdb_id=movie_id)
 
+    # Add profile pictures to reviews
+    reviews_with_images = []
+    for review in reviews:
+        review_dict = {
+            'commenter': review.commenter,
+            'content': review.content,
+            'date': review.date,
+            'movie_title': review.movie_title,
+            'image': None
+        }
+
+        try:
+            if review.commenter.profile_pic:
+                review_dict['image'] = get_b64_img(review.commenter.username)
+        except:
+            # Handle case where profile picture might be corrupted or missing
+            pass
+
+        reviews_with_images.append(review_dict)
+
     return render_template(
-        "movie_detail.html", form=form, movie=result, reviews=reviews
+        "movie_detail.html", form=form, movie=result, reviews=reviews_with_images
     )
 
 
 @movies.route("/user/<username>")
 def user_detail(username):
-    #uncomment to get review image
-    #user = find first match in db
-    #img = get_b64_img(user.username) use their username for helper function
-    return "user_detail"
+    user = User.objects(username=username).first()
+
+    if not user:
+        return render_template("user_detail.html", error="User not found")
+
+    reviews = Review.objects(commenter=user)
+
+    image = None
+    if user.profile_pic:
+        try:
+            image = get_b64_img(username)
+        except:
+            # Handle case where profile picture might be corrupted or missing
+            pass
+
+    return render_template(
+        "user_detail.html",
+        username=username,
+        reviews=reviews,
+        image=image
+    )

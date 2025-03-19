@@ -20,7 +20,7 @@ import os
 from .client import MovieClient
 
 # update with your API Key
-OMDB_API_KEY = ''
+OMDB_API_KEY = '761b8d28'
 
 # do not remove these 2 lines (required for autograder to work)
 if os.getenv('OMDB_API_KEY'):

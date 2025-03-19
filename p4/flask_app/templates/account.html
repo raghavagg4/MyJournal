@@ -6,7 +6,8 @@
         <img class="rounded-2xl h-24 w-24" src="data:image/png;base64,{{image}}" alt="image">
     {% endif %}
 
-    {# TODO: Greeting (must include the current user's username) #}
+    {# Greeting with username #}
+    <h2 class="text-2xl font-bold mt-4">Welcome, {{ current_user.username }}!</h2>
 
 </div>
 
@@ -53,6 +54,7 @@
 </div>
 
 <div class="flex justify-center">
-    {# TODO: Link to see all of the current user's reviews. #}
+    {# Link to user's reviews #}
+    <a href="{{ url_for('movies.user_detail', username=current_user.username) }}" class="text-blue-400 duration-150 hover:text-blue-200 underline">View My Reviews</a>
 </div>
 {% endblock %}

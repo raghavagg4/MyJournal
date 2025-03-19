@@ -9,7 +9,7 @@
 <div class="results-container">
   <div class="decoration-container"><div class="decoration"></div></div>
   {% for result in results %}
-  <a 
+  <a
     href="{{ url_for('movies.movie_detail', movie_id=result.imdb_id) }}"
     class="group movie-card"
   >
