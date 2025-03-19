@@ -7,6 +7,7 @@ from .. import bcrypt
 from werkzeug.utils import secure_filename
 from ..forms import RegistrationForm, LoginForm, UpdateUsernameForm, UpdateProfilePicForm
 from ..models import User
+from ..movies.routes import get_b64_img
 
 users = Blueprint("users", __name__)
 
@@ -82,12 +83,17 @@ def account():
         current_user.save()
         return redirect(url_for("users.account"))
 
-    image = None
-    content_type = "image/png"  # Default content type
-    if current_user.profile_pic and len(current_user.profile_pic) > 0:
-        image = base64.b64encode(current_user.profile_pic).decode("utf-8")
-        if current_user.profile_pic_content_type:
-            content_type = current_user.profile_pic_content_type
+    # Get profile image using the utility function
+    try:
+        image = get_b64_img(current_user.username)
+        content_type = current_user.profile_pic_content_type
+    except Exception as e:
+        # If there's any error getting the image, use the sample image
+        sample_pic_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Images', 'sample_pic.jpg')
+        with open(sample_pic_path, 'rb') as f:
+            bytes_im = BytesIO(f.read())
+            image = base64.b64encode(bytes_im.getvalue()).decode()
+            content_type = "image/jpeg"
 
     return render_template(
         "account.html",
