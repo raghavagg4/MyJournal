@@ -69,20 +69,26 @@ def account():
             return redirect(url_for("users.account"))
 
         if update_profile_pic_form.submit_picture.data and update_profile_pic_form.validate():
+            # Get the uploaded image data
             image = update_profile_pic_form.picture.data
             if image:
-                # Read the image data
                 image_data = image.read()
                 if image_data:  # Ensure we have actual image data
-                    # Update the user's profile pic in the database
-                    current_user.profile_pic = image_data
-                    current_user.save()
-
-                    # Verify the image was saved by retrieving the user record
-                    user = User.objects(username=current_user.username).first()
-                    if user and user.profile_pic:
+                    # Handle the two cases: replacing vs adding a profile picture
+                    if current_user.profile_pic:
+                        # Case 1: User already has a profile picture - replace it
+                        current_user.modify(profile_pic=image_data)
+                        current_user.save()
                         flash("Profile picture has been updated!")
                     else:
+                        # Case 2: User doesn't have a profile picture - add the uploaded one
+                        current_user.modify(profile_pic=image_data)
+                        current_user.save()
+                        flash("Profile picture has been added!")
+
+                    # Verify the image was saved correctly
+                    user = User.objects(username=current_user.username).first()
+                    if not user or not user.profile_pic:
                         flash("Error: Profile picture was not saved properly. Please try again.")
                 else:
                     flash("Unable to read image data. Please try again.")
@@ -93,7 +99,7 @@ def account():
         bytes_im = BytesIO(current_user.profile_pic)
         image = base64.b64encode(bytes_im.getvalue()).decode()
     else:
-        # Use sample picture when profile pic is None
+        # Use sample picture when profile pic is None (for display only)
         with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
             bytes_im = BytesIO(f.read())
             image = base64.b64encode(bytes_im.getvalue()).decode()
