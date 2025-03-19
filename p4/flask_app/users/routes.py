@@ -71,11 +71,19 @@ def account():
         if update_profile_pic_form.submit_picture.data and update_profile_pic_form.validate():
             image = update_profile_pic_form.picture.data
             if image:
+                # Read the image data
                 image_data = image.read()
                 if image_data:  # Ensure we have actual image data
-                    current_user.modify(profile_pic=image_data)
+                    # Update the user's profile pic in the database
+                    current_user.profile_pic = image_data
                     current_user.save()
-                    flash("Profile picture has been updated!")
+
+                    # Verify the image was saved by retrieving the user record
+                    user = User.objects(username=current_user.username).first()
+                    if user and user.profile_pic:
+                        flash("Profile picture has been updated!")
+                    else:
+                        flash("Error: Profile picture was not saved properly. Please try again.")
                 else:
                     flash("Unable to read image data. Please try again.")
             return redirect(url_for("users.account"))
