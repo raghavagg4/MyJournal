@@ -12,6 +12,8 @@ movies = Blueprint("movies", __name__)
 """ ************ Helper for pictures uses username to get their profile picture************ """
 def get_b64_img(username):
     user = User.objects(username=username).first()
+    if not user or not user.profile_pic:
+        return None
     bytes_im = io.BytesIO(user.profile_pic)
     image = base64.b64encode(bytes_im.getvalue()).decode()
     return image
@@ -76,8 +78,9 @@ def movie_detail(movie_id):
         try:
             if review.commenter.profile_pic:
                 review_dict['image'] = get_b64_img(review.commenter.username)
-        except:
+        except Exception as e:
             # Handle case where profile picture might be corrupted or missing
+            flash(f"Could not load profile picture: {str(e)}")
             pass
 
         reviews_with_images.append(review_dict)
@@ -100,8 +103,9 @@ def user_detail(username):
     if user.profile_pic:
         try:
             image = get_b64_img(username)
-        except:
+        except Exception as e:
             # Handle case where profile picture might be corrupted or missing
+            flash(f"Could not load profile picture: {str(e)}")
             pass
 
     return render_template(

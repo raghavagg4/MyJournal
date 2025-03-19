@@ -69,9 +69,10 @@ def account():
 
         if update_profile_pic_form.submit_picture.data and update_profile_pic_form.validate():
             image = update_profile_pic_form.picture.data
-            current_user.modify(profile_pic=image.read())
-            current_user.save()
-            flash("Profile picture has been updated!")
+            if image:
+                current_user.modify(profile_pic=image.read())
+                current_user.save()
+                flash("Profile picture has been updated!")
             return redirect(url_for("users.account"))
 
     image = None
