@@ -76,6 +76,7 @@ def account():
 
         img_data = BytesIO()
         img.save(img_data)
+        img_data.seek(0)  # Reset position to beginning of file
 
         current_user.modify(profile_pic=img_data.getvalue(), profile_pic_content_type=content_type)
         current_user.save()
@@ -83,7 +84,7 @@ def account():
 
     image = None
     content_type = "image/png"  # Default content type
-    if current_user.profile_pic:
+    if current_user.profile_pic and len(current_user.profile_pic) > 0:
         image = base64.b64encode(current_user.profile_pic).decode("utf-8")
         if current_user.profile_pic_content_type:
             content_type = current_user.profile_pic_content_type

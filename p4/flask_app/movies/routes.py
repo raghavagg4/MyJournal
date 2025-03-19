@@ -15,8 +15,8 @@ def get_b64_img(username):
     user = User.objects(username=username).first()
     content_type = "image/jpeg"  # Default for sample image
 
-    if not user or not user.profile_pic:
-        # Use sample picture when profile pic is None
+    if not user or not user.profile_pic or len(user.profile_pic) == 0:
+        # Use sample picture when profile pic is None or empty
         with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
             bytes_im = io.BytesIO(f.read())
     else:
@@ -112,10 +112,13 @@ def user_detail(username):
     try:
         image, content_type = get_b64_img(username)
     except Exception as e:
+        # If there's any error getting the image, use the sample image
         with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Images', 'sample_pic.jpg'), 'rb') as f:
             bytes_im = BytesIO(f.read())
             image = base64.b64encode(bytes_im.getvalue()).decode()
             content_type = "image/jpeg"
+        # Log the error or add flash message if needed
+        print(f"Error loading profile picture: {str(e)}")
 
     return render_template(
         "user_detail.html",
