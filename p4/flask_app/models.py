@@ -13,7 +13,7 @@ class User(db.Document, UserMixin):
     username = db.StringField(required=True, unique=True, min_length=1, max_length=40)
     email = db.EmailField(required=True, unique=True)
     password = db.StringField(required=True)
-    profile_pic = db.BinaryField(required=False)
+    profile_pic = db.ImageField(required=False)
     profile_pic_content_type = db.StringField(required=False)
 
     # Returns unique string identifying our object

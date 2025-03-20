@@ -75,12 +75,21 @@ def account():
             flash("Invalid image type! Please upload a JPEG or PNG image.")
             return redirect(url_for("users.account"))
 
-        img_data = BytesIO()
-        img.save(img_data)
-        img_data.seek(0)  # Reset position to beginning of file
+        # Save the image to a temporary file then read it into the ImageField
+        filename = secure_filename(f"{current_user.username}_profile.{content_type.split('/')[-1]}")
+        img_path = os.path.join('/tmp', filename)
+        img.save(img_path)
 
-        current_user.modify(profile_pic=img_data.getvalue(), profile_pic_content_type=content_type)
-        current_user.save()
+        # Open the file and save it to the ImageField
+        with open(img_path, 'rb') as f:
+            current_user.profile_pic.replace(f, content_type=content_type)
+            current_user.profile_pic_content_type = content_type
+            current_user.save()
+
+        # Clean up temporary file
+        if os.path.exists(img_path):
+            os.remove(img_path)
+
         return redirect(url_for("users.account"))
 
     # Get profile image using the utility function

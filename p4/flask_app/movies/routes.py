@@ -15,7 +15,10 @@ def get_b64_img(username):
      user = User.objects(username=username).first()
      if not user or not user.profile_pic:
          raise ValueError("User has no profile picture")
-     image = base64.b64encode(user.profile_pic).decode()
+
+     # Read the image data from GridFS
+     img_data = user.profile_pic.read()
+     image = base64.b64encode(img_data).decode()
      return image
 
 """ ************ View functions ************ """
