@@ -86,7 +86,7 @@ def account():
     # Get profile image using the utility function
     try:
         image = get_b64_img(current_user.username)
-        content_type = current_user.profile_pic_content_type
+        content_type = current_user.profile_pic_content_type or "image/jpeg"  # Default if None
     except Exception as e:
         # If there's any error getting the image, use the sample image
         sample_pic_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Images', 'sample_pic.jpg')

@@ -77,7 +77,7 @@ def movie_detail(movie_id):
 
         try:
             review_dict['image'] = get_b64_img(review.commenter.username)
-            review_dict['content_type'] = review.commenter.profile_pic_content_type
+            review_dict['content_type'] = review.commenter.profile_pic_content_type or "image/jpeg"  # Default if None
         except Exception as e:
             sample_pic_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Images', 'sample_pic.jpg')
             with open(sample_pic_path, 'rb') as f:
@@ -102,15 +102,17 @@ def user_detail(username):
     reviews = Review.objects(commenter=user)
 
     image = None
-    content_type = "image/jpeg"
+    content_type = None
     try:
         image = get_b64_img(username)
+        content_type = user.profile_pic_content_type or "image/jpeg"  # Default if None
     except Exception as e:
         # If there's any error getting the image, use the sample image
         sample_pic_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Images', 'sample_pic.jpg')
         with open(sample_pic_path, 'rb') as f:
             bytes_im = BytesIO(f.read())
             image = base64.b64encode(bytes_im.getvalue()).decode()
+            content_type = "image/jpeg"
         # Log the error or add flash message if needed
         print(f"Error loading profile picture: {str(e)}")
 
