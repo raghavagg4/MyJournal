@@ -338,7 +338,7 @@
                         // Call the API to get a thought-provoking question
                         const response = await fetch(`/go-deeper?text=${encodeURIComponent(textBeforeCursor)}`);
                         const data = await response.json();
-                        
+
                         if (data.error) {
                             console.error('Error:', data.error);
                             return;
@@ -356,14 +356,14 @@
 
                         if (isAtStartOfLine) {
                             // Cursor is on a fresh line, insert directly
-                            textToInsert = data.question + '\n';
+                            textToInsert = data.question;
                             formatIndex = insertIndex;
-                            finalCursorOffset = data.question.length + 1;
+                            finalCursorOffset = data.question.length;
                         } else {
                             // Cursor is mid-line, insert on the next line
-                            textToInsert = '\n' + data.question + '\n';
+                            textToInsert = '\n' + data.question;
                             formatIndex = insertIndex + 1;
-                            finalCursorOffset = 1 + data.question.length + 1;
+                            finalCursorOffset = 1 + data.question.length;
                         }
 
                         // Insert the text
@@ -373,7 +373,7 @@
                         quill.formatLine(formatIndex, 1, 'header', 1);
                         quill.formatText(formatIndex, data.question.length, 'color', '#C5A880');
 
-                        // Move the cursor after the prompt and the trailing newlines
+                        // Move the cursor after the prompt
                         quill.setSelection(insertIndex + finalCursorOffset, 0);
                         quill.focus(); // Ensure editor remains focused
                     } catch (error) {
