@@ -126,7 +126,7 @@ def journal(entry_id=None):
             'next_page': entries.next_num if entries and entries.has_next else None
         })
 
-    return render_template("journal.html", form=form, entries=decrypted_entries, selected_entry=selected_entry, has_next=entries.has_next if entries else False)
+    return render_template("journal/index.html", form=form, entries=decrypted_entries, selected_entry=selected_entry, has_next=entries.has_next if entries else False)
 
 @users.route("/journal/<entry_id>/delete", methods=["POST"])
 @login_required
