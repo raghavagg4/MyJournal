@@ -7,6 +7,10 @@
         <h3 class="text-xl font-semibold mb-4">Hello, {{ current_user.username }}!</h3>
         <p class="mb-4">You are now logged in to your personal journal space.</p>
         <p class="mb-6">This is a sample page shown when you're authenticated.</p>
+        
+        <a href="{{ url_for('ai.ai_assistant') }}" class="block w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-center">
+            Talk to AI Assistant
+        </a>
     </div>
 </div>
 {% endblock %}
