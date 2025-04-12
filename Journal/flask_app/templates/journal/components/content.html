@@ -1,6 +1,110 @@
 {% macro render_journal_content(form, selected_entry) %}
 <div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6 relative">
-    <div class="flex-1 overflow-y-auto w-full h-full">
+    <!-- Add Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- Add Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to remove white boundary on Quill editor */
+        #editor-container {
+            border: none !important;
+            overflow-y: auto;
+            height: 100%;
+        }
+        .ql-toolbar.ql-snow {
+            border: none !important;
+            border-bottom: none !important;
+            background: transparent;
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            padding-right: 20px !important;
+            position: absolute;
+            right: 0;
+            z-index: 10;
+        }
+        .ql-container.ql-snow {
+            border: none !important;
+        }
+        .ql-editor {
+            padding: 12px 0;
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 1.25rem !important;
+            line-height: 1.6 !important;
+        }
+        /* Style for toolbar size dropdown preview */
+        .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="true"]::before {
+            font-size: 16px;
+            content: "Big";
+            font-weight: bold;
+        }
+        .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="false"]::before {
+            font-size: 14px;
+            content: "Text";
+        }
+        .ql-snow .ql-picker.ql-header .ql-picker-label::before {
+            content: "Size";
+        }
+        /* Completely rebuild the header dropdown styling */
+        .ql-snow .ql-picker.ql-header {
+            width: auto !important;
+            margin-right: 0;
+        }
+        .ql-snow .ql-picker-label {
+            width: auto !important;
+            padding: 0 18px 0 0 !important;
+        }
+        /* Make dropdown menu smaller */
+        .ql-snow .ql-picker.ql-header .ql-picker-options {
+            width: 70px !important;
+            padding: 2px !important;
+        }
+
+        .ql-snow .ql-picker.ql-header .ql-picker-item {
+            padding: 3px 5px !important;
+            font-size: 12px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        /* Remove any extra selectors that might be causing issues */
+        .ql-toolbar.ql-snow .ql-picker.ql-header {
+            margin-right: 0 !important;
+        }
+
+        /* Consistent styling for title and content */
+        .journal-title-input {
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 2rem !important;
+            font-weight: 600 !important;
+            line-height: 1.4 !important;
+            padding: 1.5rem 0 !important;
+            border: none !important;
+            outline: none !important;
+            background: transparent !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .journal-title-input::placeholder {
+            color: #9CA3AF !important;
+            font-weight: 500 !important;
+        }
+
+        /* Ensure all text in Quill uses Montserrat */
+        .ql-editor * {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
+        /* Style for placeholder text */
+        .ql-editor.ql-blank::before {
+            color: #9CA3AF !important;
+            font-style: normal !important;
+            left: 0 !important;
+            right: auto !important;
+        }
+    </style>
+
+    <div class="flex-1 w-full h-full">
         <div class="h-full w-full flex flex-col max-w-4xl mx-auto journal-content-wrapper">
             <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col">
                 {{ form.csrf_token }}
@@ -19,8 +123,9 @@
                     {% endif %}
                 </div>
 
-                <div class="flex-grow">
-                    {{ form.content(class="journal-content-input w-full h-full", placeholder="Start writing your thoughts here...") }}
+                <div class="flex-grow" style="overflow: hidden;">
+                    <div id="editor-container" class="h-full border rounded-md">{{ selected_entry.content|safe if selected_entry else '' }}</div>
+                    {{ form.content(class="journal-content-input hidden", id="hidden-content") }}
                     {% if form.content.errors %}
                         <div class="text-red-500 text-xs mt-1 px-4">
                             {% for error in form.content.errors %}
@@ -31,7 +136,7 @@
                 </div>
 
                 <div class="journal-button-wrapper flex items-center justify-between mt-auto">
-                    {{ form.submit(class="journal-button journal-save-button text-white") }}
+                    <button type="button" onclick="updateContentField()" class="journal-button journal-save-button text-white">Save</button>
 
                     {% if selected_entry %}
                         <button type="button" onclick="document.getElementById('delete-form').submit()" class="journal-button journal-delete-button text-white">
@@ -51,7 +156,7 @@
     <div id="floating-menu-container" style="position: fixed; bottom: 40px; right: 80px; z-index: 999;">
         <div id="floating-buttons" style="display: none; position: absolute; bottom: 90px; right: 0px;">
             <div class="flex flex-col gap-4 items-end">
-                <button onclick="alert('Go Deeper clicked')" class="rounded-full bg-indigo-600 p-2 shadow-lg hover:bg-indigo-700 transition-all flex items-center" title="Go Deeper" style="min-width: 150px;">
+                <button onclick="insertDeepThoughtPrompt()" class="rounded-full bg-indigo-600 p-2 shadow-lg hover:bg-indigo-700 transition-all flex items-center" title="Go Deeper" style="min-width: 150px;">
                     <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Go Deeper" style="width: 40px; height: 40px;">
                     <span class="text-white ml-2 font-medium">Go Deeper</span>
                 </button>
@@ -94,27 +199,182 @@
             transform: scale(1);
         }
     </style>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
-        // Direct function for immediate execution
-        function toggleMenuDirect() {
-            console.log("Toggle menu direct called");
-            const buttons = document.getElementById('floating-buttons');
-            const icon = document.getElementById('menu-icon');
+        let quill = null;
 
-            if (buttons.style.display === 'none' || buttons.style.display === '') {
-                buttons.style.display = 'block';
-                if (icon) icon.style.transform = 'rotate(45deg)';
-                console.log("Menu opened");
-            } else {
-                buttons.style.display = 'none';
-                if (icon) icon.style.transform = 'rotate(0deg)';
-                console.log("Menu closed");
+        function initializeQuill() {
+            if (quill) {
+                return; // Already initialized
+            }
+
+            try {
+                quill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'header': [false, true] }]
+                        ],
+                        keyboard: {
+                            bindings: {
+                                tab: false
+                            }
+                        }
+                    },
+                    placeholder: 'Start writing your thoughts here...',
+                    bounds: '#editor-container'
+                });
+
+                // Force focus on editor after initialization
+                setTimeout(() => {
+                    quill.focus();
+                }, 100);
+
+                // Handle editor focus
+                quill.on('selection-change', function(range) {
+                    if (range) {
+                        quill.focus();
+                    }
+                });
+
+                // Handle editor clicks
+                const editorContainer = document.getElementById('editor-container');
+                editorContainer.addEventListener('click', function(e) {
+                    if (e.target.closest('.ql-editor')) {
+                        quill.focus();
+                    }
+                });
+
+                // Add custom styles
+                const customStyles = document.createElement('style');
+                customStyles.textContent = `
+                    .ql-editor {
+                        font-size: 1rem;
+                        min-height: 200px;
+                        padding: 20px;
+                    }
+                    .ql-container {
+                        height: 100%;
+                        border: none !important;
+                    }
+                    .ql-toolbar {
+                        position: sticky;
+                        top: 0;
+                        z-index: 1;
+                        background: white;
+                    }
+                    /* Style for normal text size */
+                    .ql-editor p {
+                        font-size: 1rem !important;
+                        line-height: 1.6 !important;
+                    }
+                    /* Style for header text size */
+                    .ql-editor h1 {
+                        font-size: 2rem !important;
+                        font-weight: 600 !important;
+                        margin-top: 0.5rem !important;
+                        margin-bottom: 0.5rem !important;
+                        line-height: 1.5 !important;
+                    }
+                    /* Override Quill's default styles */
+                    .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="true"]::before {
+                        content: "Big";
+                        font-size: 2rem;
+                    }
+                    .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="false"]::before {
+                        content: "Normal";
+                        font-size: 1rem;
+                    }
+                `;
+                document.head.appendChild(customStyles);
+
+                // Make functions globally available
+                window.updateContentField = function() {
+                    if (!quill) return;
+                    const hiddenInput = document.getElementById('hidden-content');
+                    hiddenInput.value = quill.root.innerHTML;
+                    hiddenInput.form.submit();
+                }
+
+                window.insertDeepThoughtPrompt = function() {
+                    if (!quill) return;
+                    const range = quill.getSelection(true); // Get current cursor position or selection
+                    if (!range) {
+                        quill.focus(); // Focus editor if no selection
+                        return;
+                    }
+
+                    // Determine the insert index (end of current selection or cursor position)
+                    const insertIndex = range.index + range.length;
+
+                    // Check if the insertion point is at the beginning of a line
+                    const isAtStartOfLine = insertIndex === 0 || quill.getText(insertIndex - 1, 1) === '\n';
+
+                    let promptText = 'Why do you feel this way?';
+                    let textToInsert = '';
+                    let formatIndex = 0;
+                    let finalCursorOffset = 0;
+
+                    if (isAtStartOfLine) {
+                        // Cursor is on a fresh line, insert directly
+                        textToInsert = promptText + '\n';
+                        formatIndex = insertIndex;
+                        finalCursorOffset = promptText.length + 1;
+                    } else {
+                        // Cursor is mid-line, insert on the next line
+                        textToInsert = '\n' + promptText + '\n';
+                        formatIndex = insertIndex + 1;
+                        finalCursorOffset = 1 + promptText.length + 1;
+                    }
+
+                    // Insert the text
+                    quill.insertText(insertIndex, textToInsert);
+
+                    // Apply the H1 format to the line containing the prompt
+                    quill.formatLine(formatIndex, 1, 'header', 1);
+
+                    // Move the cursor after the prompt and the trailing newlines
+                    quill.setSelection(insertIndex + finalCursorOffset, 0);
+                    quill.focus(); // Ensure editor remains focused
+                }
+
+                window.toggleMenuDirect = function() {
+                    const buttons = document.getElementById('floating-buttons');
+                    const icon = document.getElementById('menu-icon');
+                    if (buttons.style.display === 'none' || buttons.style.display === '') {
+                        buttons.style.display = 'block';
+                        if (icon) icon.style.transform = 'rotate(45deg)';
+                    } else {
+                        buttons.style.display = 'none';
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    }
+                }
+
+            } catch (error) {
+                console.error('Failed to initialize Quill editor:', error);
             }
         }
 
-        // Still keep the DOMContentLoaded event for good measure
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM loaded and ready");
+        // Initialize on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeQuill);
+        } else {
+            initializeQuill();
+        }
+
+        // Re-initialize if editor container is modified
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && document.getElementById('editor-container')) {
+                    initializeQuill();
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
         });
     </script>
 </div>
