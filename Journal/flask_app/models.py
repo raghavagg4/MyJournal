@@ -23,6 +23,13 @@ class User(db.Document, UserMixin):
     email = db.EmailField(required=True, unique=True)
     password = db.StringField(required=True)
 
+    meta = {
+        'indexes': [
+            'username',
+            'email'
+        ]
+    }
+
     # Returns unique string identifying our object
     def get_id(self):
         return self.username
@@ -41,7 +48,12 @@ class JournalEntry(db.Document):
     updated_at = db.DateTimeField(default=datetime.now)
 
     meta = {
-        'ordering': ['-created_at']
+        'ordering': ['-created_at'],
+        'indexes': [
+            'user',
+            'created_at',
+            {'fields': ['user', 'created_at']}  # Compound index for user-specific queries
+        ]
     }
 
     @staticmethod
