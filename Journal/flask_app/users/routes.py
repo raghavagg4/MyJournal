@@ -28,6 +28,7 @@ def welcome():
 def journal(entry_id=None):
     form = JournalEntryForm()
     selected_entry = None
+    print("DEBUG: Journal route accessed")
 
     # Pagination parameters
     page = request.args.get('page', 1, type=int)
@@ -36,6 +37,7 @@ def journal(entry_id=None):
     # Get paginated journal entries for the current user
     try:
         entries = JournalEntry.objects(user=current_user.id).order_by('-created_at').paginate(page=page, per_page=per_page)
+        print("DEBUG: Successfully retrieved journal entries")
 
         # Decrypt entries for display
         decrypted_entries = []
@@ -50,6 +52,7 @@ def journal(entry_id=None):
                     'updated_at': entry.updated_at
                 })
             except Exception as e:
+                print(f"DEBUG: Error decrypting entry: {str(e)}")
                 # If decryption fails, show a placeholder
                 decrypted_entries.append({
                     'id': str(entry.id),
@@ -59,6 +62,7 @@ def journal(entry_id=None):
                     'updated_at': entry.updated_at
                 })
     except Exception as e:
+        print(f"DEBUG: Error loading journal entries: {str(e)}")
         flash(f"Error loading journal entries: {str(e)}")
         decrypted_entries = []
         entries = None
@@ -66,6 +70,7 @@ def journal(entry_id=None):
     # If an entry_id is provided, load that specific entry
     if entry_id:
         try:
+            print(f"DEBUG: Loading specific entry with ID: {entry_id}")
             # Find the selected entry in the decrypted entries
             for entry in decrypted_entries:
                 if entry['id'] == entry_id:
@@ -75,22 +80,27 @@ def journal(entry_id=None):
                     break
 
             if not selected_entry:
+                print("DEBUG: Journal entry not found")
                 flash("Journal entry not found.")
                 return redirect(url_for("users.journal"))
 
         except Exception as e:
+            print(f"DEBUG: Error loading journal entry: {str(e)}")
             flash(f"Error loading journal entry: {str(e)}")
             return redirect(url_for("users.journal"))
 
     if form.validate_on_submit():
+        print("DEBUG: Form submitted and validated")
         try:
             # Encrypt the journal entry content
+            print("DEBUG: Encrypting content")
             encrypted_content = JournalEntry.encrypt_content(
                 form.content.data,
                 str(current_user.id)
             )
 
             if selected_entry:
+                print("DEBUG: Updating existing entry")
                 # Update existing entry
                 entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
                 if entry:
@@ -99,10 +109,13 @@ def journal(entry_id=None):
                         content=encrypted_content,
                         updated_at=datetime.now()
                     )
+                    print("DEBUG: Entry updated successfully")
                     flash("Journal entry updated successfully!")
                 else:
+                    print("DEBUG: Entry not found for update")
                     flash("Journal entry not found.")
             else:
+                print("DEBUG: Creating new entry")
                 # Create new entry
                 entry = JournalEntry(
                     user=current_user.id,
@@ -112,10 +125,16 @@ def journal(entry_id=None):
                     updated_at=datetime.now()
                 )
                 entry.save()
+                print("DEBUG: New entry saved successfully")
                 flash("Journal entry saved successfully!")
+                # Set the entry_id to the newly created entry
+                entry_id = str(entry.id)
 
-            return redirect(url_for("users.journal"))
+            # Instead of redirecting, reload the current page with the updated entry
+            return redirect(url_for("users.journal", entry_id=entry_id))
+
         except Exception as e:
+            print(f"DEBUG: Error saving journal entry: {str(e)}")
             flash(f"Error saving journal entry: {str(e)}")
 
     # If it's an AJAX request, return JSON

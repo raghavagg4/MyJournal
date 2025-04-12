@@ -10,6 +10,8 @@ import os
 
 # Salt for encryption (should be stored securely in production)
 ENCRYPTION_SALT = os.environ.get('ENCRYPTION_SALT', os.urandom(16))
+if isinstance(ENCRYPTION_SALT, str):
+    ENCRYPTION_SALT = ENCRYPTION_SALT.encode()
 
 @login_manager.user_loader
 def load_user(user_id):
