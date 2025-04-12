@@ -239,7 +239,8 @@
                     modules: {
                         toolbar: [
                             ['bold', 'italic', 'underline'],
-                            [{ 'header': [false, true] }]
+                            [{ 'header': [false, true] }],
+                            [{ 'color': ['#000000', '#C5A880'] }]
                         ],
                         keyboard: {
                             bindings: {
@@ -322,7 +323,7 @@
                     hiddenInput.form.submit();
                 }
 
-                window.insertDeepThoughtPrompt = function() {
+                window.insertDeepThoughtPrompt = async function() {
                     if (!quill) return;
                     const range = quill.getSelection(true); // Get current cursor position or selection
                     if (!range) {
@@ -330,38 +331,62 @@
                         return;
                     }
 
-                    // Determine the insert index (end of current selection or cursor position)
-                    const insertIndex = range.index + range.length;
+                    // Get the text before the cursor
+                    const textBeforeCursor = quill.getText(0, range.index);
 
-                    // Check if the insertion point is at the beginning of a line
-                    const isAtStartOfLine = insertIndex === 0 || quill.getText(insertIndex - 1, 1) === '\n';
+                    try {
+                        // Call the API to get a thought-provoking question
+                        const response = await fetch(`/go-deeper?text=${encodeURIComponent(textBeforeCursor)}`);
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            console.error('Error:', data.error);
+                            return;
+                        }
 
-                    let promptText = 'Why do you feel this way?';
-                    let textToInsert = '';
-                    let formatIndex = 0;
-                    let finalCursorOffset = 0;
+                        // Determine the insert index (end of current selection or cursor position)
+                        const insertIndex = range.index + range.length;
 
-                    if (isAtStartOfLine) {
-                        // Cursor is on a fresh line, insert directly
-                        textToInsert = promptText + '\n';
-                        formatIndex = insertIndex;
-                        finalCursorOffset = promptText.length + 1;
-                    } else {
-                        // Cursor is mid-line, insert on the next line
-                        textToInsert = '\n' + promptText + '\n';
-                        formatIndex = insertIndex + 1;
-                        finalCursorOffset = 1 + promptText.length + 1;
+                        // Check if the insertion point is at the beginning of a line
+                        const isAtStartOfLine = insertIndex === 0 || quill.getText(insertIndex - 1, 1) === '\n';
+
+                        let textToInsert = '';
+                        let formatIndex = 0;
+                        let finalCursorOffset = 0;
+
+                        if (isAtStartOfLine) {
+                            // Cursor is on a fresh line, insert directly
+                            textToInsert = data.question + '\n';
+                            formatIndex = insertIndex;
+                            finalCursorOffset = data.question.length + 1;
+                        } else {
+                            // Cursor is mid-line, insert on the next line
+                            textToInsert = '\n' + data.question + '\n';
+                            formatIndex = insertIndex + 1;
+                            finalCursorOffset = 1 + data.question.length + 1;
+                        }
+
+                        // Insert the text
+                        quill.insertText(insertIndex, textToInsert);
+
+                        // Apply the H1 format and matte gold color to the line containing the prompt
+                        quill.formatLine(formatIndex, 1, 'header', 1);
+                        quill.formatText(formatIndex, data.question.length, 'color', '#C5A880');
+
+                        // Move the cursor after the prompt and the trailing newlines
+                        quill.setSelection(insertIndex + finalCursorOffset, 0);
+                        quill.focus(); // Ensure editor remains focused
+                    } catch (error) {
+                        console.error('Error getting question:', error);
+                        // Fallback to hardcoded text if API fails
+                        const fallbackText = 'Why do you feel this way?';
+                        let textToInsert = isAtStartOfLine ? fallbackText + '\n' : '\n' + fallbackText + '\n';
+                        quill.insertText(insertIndex, textToInsert);
+                        quill.formatLine(insertIndex, 1, 'header', 1);
+                        quill.formatText(insertIndex, fallbackText.length, 'color', '#C5A880');
+                        quill.setSelection(insertIndex + textToInsert.length, 0);
+                        quill.focus();
                     }
-
-                    // Insert the text
-                    quill.insertText(insertIndex, textToInsert);
-
-                    // Apply the H1 format to the line containing the prompt
-                    quill.formatLine(formatIndex, 1, 'header', 1);
-
-                    // Move the cursor after the prompt and the trailing newlines
-                    quill.setSelection(insertIndex + finalCursorOffset, 0);
-                    quill.focus(); // Ensure editor remains focused
                 }
 
                 window.toggleMenuDirect = function() {
