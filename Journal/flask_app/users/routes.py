@@ -1,15 +1,16 @@
 from flask import Blueprint, redirect, url_for, render_template, flash, request
 from flask_login import current_user, login_required, login_user, logout_user
 from .. import bcrypt, db
-from ..forms import RegistrationForm, LoginForm
-from ..models import User
+from ..forms import RegistrationForm, LoginForm, JournalEntryForm
+from ..models import User, JournalEntry
+from datetime import datetime
 
 users = Blueprint("users", __name__)
 
 @users.route("/", methods=["GET"])
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for("users.welcome"))
+        return redirect(url_for("users.journal"))
     return redirect(url_for("users.login"))
 
 @users.route("/welcome", methods=["GET"])
@@ -20,6 +21,114 @@ def welcome():
     except Exception as e:
         flash("An error occurred. Please try logging in again.")
         return redirect(url_for("users.login"))
+
+@users.route("/journal", methods=["GET", "POST"])
+@users.route("/journal/<entry_id>", methods=["GET", "POST"])
+@login_required
+def journal(entry_id=None):
+    form = JournalEntryForm()
+    selected_entry = None
+
+    # Get all journal entries for the current user
+    try:
+        entries = JournalEntry.objects(user=current_user.id).order_by('-created_at')
+        # Decrypt entries for display
+        decrypted_entries = []
+        for entry in entries:
+            try:
+                decrypted_content = entry.decrypt_content()
+                decrypted_entries.append({
+                    'id': str(entry.id),
+                    'title': entry.title,
+                    'content': decrypted_content,
+                    'created_at': entry.created_at,
+                    'updated_at': entry.updated_at
+                })
+            except Exception as e:
+                # If decryption fails, show a placeholder
+                decrypted_entries.append({
+                    'id': str(entry.id),
+                    'title': entry.title,
+                    'content': "Error decrypting entry",
+                    'created_at': entry.created_at,
+                    'updated_at': entry.updated_at
+                })
+    except Exception as e:
+        flash(f"Error loading journal entries: {str(e)}")
+        decrypted_entries = []
+
+    # If an entry_id is provided, load that specific entry
+    if entry_id:
+        try:
+            # Find the selected entry in the decrypted entries
+            for entry in decrypted_entries:
+                if entry['id'] == entry_id:
+                    selected_entry = entry
+                    form.title.data = entry['title']
+                    form.content.data = entry['content']
+                    break
+
+            if not selected_entry:
+                flash("Journal entry not found.")
+                return redirect(url_for("users.journal"))
+
+        except Exception as e:
+            flash(f"Error loading journal entry: {str(e)}")
+            return redirect(url_for("users.journal"))
+
+    if form.validate_on_submit():
+        try:
+            # Encrypt the journal entry content
+            encrypted_content = JournalEntry.encrypt_content(
+                form.content.data,
+                str(current_user.id)
+            )
+
+            if selected_entry:
+                # Update existing entry
+                entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
+                if entry:
+                    entry.update(
+                        title=form.title.data,
+                        content=encrypted_content,
+                        updated_at=datetime.now()
+                    )
+                    flash("Journal entry updated successfully!")
+                else:
+                    flash("Journal entry not found.")
+            else:
+                # Create new entry
+                entry = JournalEntry(
+                    user=current_user.id,
+                    title=form.title.data,
+                    content=encrypted_content,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now()
+                )
+                entry.save()
+                flash("Journal entry saved successfully!")
+
+            return redirect(url_for("users.journal"))
+        except Exception as e:
+            flash(f"Error saving journal entry: {str(e)}")
+
+    return render_template("journal.html", form=form, entries=decrypted_entries, selected_entry=selected_entry)
+
+@users.route("/journal/<entry_id>/delete", methods=["POST"])
+@login_required
+def delete_entry(entry_id):
+    try:
+        # Ensure the entry belongs to the current user
+        entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
+        if entry:
+            entry.delete()
+            flash("Journal entry deleted successfully.")
+        else:
+            flash("Journal entry not found.")
+    except Exception as e:
+        flash(f"Error deleting entry: {str(e)}")
+
+    return redirect(url_for("users.journal"))
 
 """ ************ User Management views ************ """
 
@@ -56,7 +165,7 @@ def login():
 
             if user is not None and bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user)
-                return redirect(url_for("users.welcome"))
+                return redirect(url_for("users.journal"))
             else:
                 flash("Login failed. Check your username and password.")
                 return redirect(url_for("users.login"))

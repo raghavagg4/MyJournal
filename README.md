@@ -1,42 +1,59 @@
-# My Journal
+# Personal Journal Application
 
-A Flask-based web application for managing personal journals.
+A secure journal application where users can write and save encrypted journal entries.
 
 ## Features
 
-- User authentication (login/register)
-- MongoDB database integration
-- Responsive web design
+- User registration and authentication
+- Encrypted journal entries using Fernet symmetric encryption
+- Create, view, and delete journal entries
+- All entries are stored in MongoDB
 
-## Installation
+## Setup Instructions
 
-1. Clone the repository:
-```
-git clone https://github.com/yourusername/my-journal.git
-cd my-journal
-```
-
-2. Create and activate a virtual environment:
-```
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
+1. Clone the repository
+2. Set up a virtual environment:
+   ```
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 3. Install the dependencies:
-```
-pip install -r requirements.txt
-```
-
-4. Create a `.env` file in the root directory with the following content:
-```
-MONGODB_HOST=your_mongodb_connection_string
-```
-
+   ```
+   pip install -r requirements.txt
+   ```
+4. Set environment variables (optional):
+   ```
+   export ENCRYPTION_SALT=your_custom_salt  # For production
+   ```
 5. Run the application:
-```
-cd Journal
-flask run
-```
+   ```
+   export FLASK_APP=Journal/flask_app:create_app
+   export FLASK_ENV=development  # For development mode
+   flask run
+   ```
+
+## Security Features
+
+- User passwords are hashed with bcrypt
+- Journal entries are encrypted with Fernet symmetric encryption
+- Each user's entries are encrypted with a unique key derived from their user ID
+- All sensitive data is stored in encrypted form in the database
+
+## Development
+
+To set up a development environment:
+
+1. Follow the setup steps above
+2. Activate the virtual environment
+3. Run the application in debug mode
+
+## Required Dependencies
+
+- Flask
+- MongoEngine (MongoDB ODM)
+- Flask-Login for authentication
+- Flask-WTF for forms
+- Cryptography for secure encryption
 
 ## Technologies Used
 

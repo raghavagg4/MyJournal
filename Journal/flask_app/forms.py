@@ -1,6 +1,6 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, TextAreaField
 from wtforms.validators import (
     InputRequired,
     Length,
@@ -42,3 +42,12 @@ class LoginForm(FlaskForm):
         "Password", validators=[InputRequired()]
     )
     submit = SubmitField("Login")
+
+class JournalEntryForm(FlaskForm):
+    title = StringField(
+        "Title", validators=[InputRequired(), Length(min=1, max=100)]
+    )
+    content = TextAreaField(
+        "Write your thoughts...", validators=[InputRequired()]
+    )
+    submit = SubmitField("Save Entry")
