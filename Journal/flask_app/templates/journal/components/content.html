@@ -1,5 +1,5 @@
 {% macro render_journal_content(form, selected_entry) %}
-<div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6">
+<div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6 relative">
     <div class="flex-1 overflow-y-auto w-full h-full">
         <div class="h-full w-full flex flex-col max-w-4xl mx-auto journal-content-wrapper">
             <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col">
@@ -48,5 +48,74 @@
             {% endif %}
         </div>
     </div>
+    <div id="floating-menu-container" style="position: fixed; bottom: 40px; right: 80px; z-index: 999;">
+        <div id="floating-buttons" style="display: none; position: absolute; bottom: 90px; right: 0px;">
+            <div class="flex flex-col gap-4 items-end">
+                <button onclick="alert('Go Deeper clicked')" class="rounded-full bg-indigo-600 p-2 shadow-lg hover:bg-indigo-700 transition-all flex items-center" title="Go Deeper" style="min-width: 150px;">
+                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Go Deeper" style="width: 40px; height: 40px;">
+                    <span class="text-white ml-2 font-medium">Go Deeper</span>
+                </button>
+
+                <button onclick="alert('Button 2 clicked')" class="rounded-full bg-green-600 p-2 shadow-lg hover:bg-green-700 transition-all flex items-center" title="Button 2" style="min-width: 150px;">
+                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Button 2" style="width: 40px; height: 40px;">
+                    <span class="text-white ml-2 font-medium">Button 2</span>
+                </button>
+
+                <button onclick="alert('Button 3 clicked')" class="rounded-full bg-red-600 p-2 shadow-lg hover:bg-red-700 transition-all flex items-center" title="Button 3" style="min-width: 150px;">
+                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Button 3" style="width: 40px; height: 40px;">
+                    <span class="text-white ml-2 font-medium">Button 3</span>
+                </button>
+            </div>
+        </div>
+        <button type="button" id="main-menu-button" onclick="toggleMenuDirect()" class="border-0 bg-transparent p-0 cursor-pointer" style="z-index: 1000;">
+            <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Logo" id="menu-icon" style="width: 80px; height: 80px; opacity: 100%;">
+        </button>
+    </div>
+    <style>
+        .hidden {
+            display: none;
+        }
+        .rotate {
+            transform: rotate(45deg);
+        }
+        #floating-menu {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #floating-menu.visible {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .floating-menu-button {
+            transition: all 0.2s ease;
+            transform: scale(0.95);
+        }
+        .floating-menu-button:hover {
+            transform: scale(1);
+        }
+    </style>
+    <script>
+        // Direct function for immediate execution
+        function toggleMenuDirect() {
+            console.log("Toggle menu direct called");
+            const buttons = document.getElementById('floating-buttons');
+            const icon = document.getElementById('menu-icon');
+
+            if (buttons.style.display === 'none' || buttons.style.display === '') {
+                buttons.style.display = 'block';
+                if (icon) icon.style.transform = 'rotate(45deg)';
+                console.log("Menu opened");
+            } else {
+                buttons.style.display = 'none';
+                if (icon) icon.style.transform = 'rotate(0deg)';
+                console.log("Menu closed");
+            }
+        }
+
+        // Still keep the DOMContentLoaded event for good measure
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded and ready");
+        });
+    </script>
 </div>
 {% endmacro %}
