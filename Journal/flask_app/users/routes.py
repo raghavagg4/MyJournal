@@ -96,7 +96,7 @@ def journal(entry_id=None):
         except Exception as e:
             flash(f"Error saving journal entry: {str(e)}")
 
-    return render_template("journal.html", form=form, entries=decrypted_entries, selected_entry=selected_entry)
+    return render_template("journal/index.html", form=form, entries=decrypted_entries, selected_entry=selected_entry)
 
 @users.route("/journal/<entry_id>/delete", methods=["POST"])
 @login_required
