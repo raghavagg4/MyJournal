@@ -1,14 +1,14 @@
 {% macro render_journal_content(form, selected_entry) %}
-<div class="flex-1 flex flex-col h-full overflow-hidden">
-    <div class="flex-1 p-6 overflow-y-auto">
-        <div class="h-full max-w-4xl mx-auto w-full">
-            <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col">
+<div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6">
+    <div class="flex-1 overflow-y-auto w-full h-full">
+        <div class="h-full w-full flex flex-col max-w-4xl mx-auto journal-content-wrapper">
+            <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col w-full flex-grow">
                 {{ form.csrf_token }}
 
-                <div class="mb-4">
-                    {{ form.title(class="shadow appearance-none border rounded w-full py-2 px-3 text-xl font-medium focus:outline-none focus:shadow-outline", placeholder="Title...") }}
+                <div>
+                    {{ form.title(class="journal-title-input w-full", placeholder="Title your journal entry...") }}
                     {% if form.title.errors %}
-                        <div class="text-red-500 text-xs mt-1">
+                        <div class="text-red-500 text-xs mt-1 px-4">
                             {% for error in form.title.errors %}
                                 {{ error }}
                             {% endfor %}
@@ -16,10 +16,10 @@
                     {% endif %}
                 </div>
 
-                <div class="flex-1 mb-4">
-                    {{ form.content(class="h-full rounded-xl p-4 text-base shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline", placeholder="Start writing your thoughts here...") }}
+                <div class="flex-grow">
+                    {{ form.content(class="journal-content-input w-full h-full", placeholder="Start writing your thoughts here...") }}
                     {% if form.content.errors %}
-                        <div class="text-red-500 text-xs mt-1">
+                        <div class="text-red-500 text-xs mt-1 px-4">
                             {% for error in form.content.errors %}
                                 {{ error }}
                             {% endfor %}
@@ -27,12 +27,12 @@
                     {% endif %}
                 </div>
 
-                <div class="flex items-center justify-between">
-                    {{ form.submit(class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline") }}
+                <div class="journal-button-wrapper flex items-center justify-between mt-auto">
+                    {{ form.submit(class="journal-button journal-save-button text-white") }}
 
                     {% if selected_entry %}
                         <form method="POST" action="{{ url_for('users.delete_entry', entry_id=selected_entry.id) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            <button type="submit" class="journal-button journal-delete-button text-white">
                                 Delete
                             </button>
                         </form>

@@ -1,0 +1,71 @@
+/* Journal Content Styling */
+.journal-content-wrapper {
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.journal-title-input {
+  border: none !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  border-radius: 0 !important;
+  padding: 1rem !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease;
+}
+
+.journal-title-input:focus {
+  border-bottom: 2px solid #4299e1 !important;
+  box-shadow: none !important;
+}
+
+.journal-content-input {
+  border: none !important;
+  padding: 1.5rem !important;
+  font-size: 1.1rem !important;
+  line-height: 1.7 !important;
+  background-color: #f8fafc !important;
+  min-height: 70vh !important;
+  resize: none;
+  transition: all 0.3s ease;
+}
+
+.journal-content-input:focus {
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.journal-button {
+  padding: 0.5rem 1.5rem !important;
+  border-radius: 9999px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease;
+  letter-spacing: 0.025em;
+}
+
+.journal-save-button {
+  background-color: #4f46e5 !important;
+}
+
+.journal-save-button:hover {
+  background-color: #4338ca !important;
+  transform: translateY(-1px);
+}
+
+.journal-delete-button {
+  background-color: #ef4444 !important;
+}
+
+.journal-delete-button:hover {
+  background-color: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+.journal-button-wrapper {
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}

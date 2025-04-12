@@ -28,7 +28,7 @@ def welcome():
 def journal(entry_id=None):
     form = JournalEntryForm()
     selected_entry = None
-    
+
     # Pagination parameters
     page = request.args.get('page', 1, type=int)
     per_page = 10  # Number of entries per page
@@ -36,7 +36,7 @@ def journal(entry_id=None):
     # Get paginated journal entries for the current user
     try:
         entries = JournalEntry.objects(user=current_user.id).order_by('-created_at').paginate(page=page, per_page=per_page)
-        
+
         # Decrypt entries for display
         decrypted_entries = []
         for entry in entries.items:
