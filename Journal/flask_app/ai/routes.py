@@ -17,20 +17,20 @@ def ai_assistant():
     if request.method == "POST":
         try:
             # Initialize the model
-            model = genai.GenerativeModel('gemini-1.5-pro')
-            
+            model = genai.GenerativeModel('gemini-2.0-flash-lite-preview')
+
             # Get the message from the request
             data = request.get_json()
             message = data.get('message', "Hello, I'm your AI assistant. How can I help you today?")
-            
+
             # Generate response
             response = model.generate_content(message)
-            
+
             return jsonify({"response": response.text})
         except Exception as e:
             print(f"Error: {str(e)}")
             return jsonify({"error": str(e)}), 500
-    
+
     return render_template("ai_assistant.html")
 
 @ai.route("/go-deeper", methods=["GET", "POST"])
@@ -38,32 +38,36 @@ def ai_assistant():
 def go_deeper():
     try:
         # Initialize the model with the latest version
-        model = genai.GenerativeModel('gemini-1.5-pro-latest')
-        
+        model = genai.GenerativeModel('gemini-2.0-flash-lite')
+
         # Get the text from either GET or POST request
         if request.method == "GET":
             text = request.args.get('text', '')
         else:
             data = request.get_json()
             text = data.get('text', '')
-        
+
         if not text:
             return jsonify({"error": "No text provided"}), 400
-        
-        # Create a prompt to generate thought-provoking questions
-        prompt = f"""Based on the following journal entry, generate a thought-provoking question that encourages deeper reflection. 
-        The question should be relevant to the content and help the writer explore their thoughts and feelings more deeply.
-        Keep the question concise and open-ended.
-        
-        Journal entry: {text}
-        
-        Question:"""
-        
-        # Generate response
+
+        # Create a refined prompt to generate thought-provoking questions
+        prompt = (
+    "You are an insightful reflection assistant helping users delve deeper into their journal entries. "
+    "Given the following journal entry, generate one concise, thought-provoking question to encourage deeper reflection. "
+    "The question must:\n"
+    "1. Directly relate to the specific content and emotions expressed.\n"
+    "2. Encourage exploration of underlying thoughts, feelings, or motivations.\n"
+    "3. Aknowledge the user's emotions, thoughts, and feelings.\n"
+    "4. Keep the question simple and concise (no more than 10 words).\n"
+    "5. If it helps, try to give user a situation to relfect on\n"
+    f"Journal entry: {text}\n")
+
+        # Generate responses
         response = model.generate_content(prompt)
-        
+
         # Return the response as JSON
         return jsonify({"question": response.text})
     except Exception as e:
         print(f"Error: {str(e)}")
-        return jsonify({"error": str(e)}), 500 
+        return jsonify({"error": str(e)}), 500
+
