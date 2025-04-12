@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="flex h-screen bg-gray-50 overflow-hidden">
-    {{ render_sidebar(entries) }}
+    {{ render_sidebar(entries, selected_entry) }}
     {{ render_journal_content(form, selected_entry) }}
 </div>
 {% endblock %}

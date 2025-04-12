@@ -1,4 +1,4 @@
-{% macro render_sidebar(entries) %}
+{% macro render_sidebar(entries, selected_entry) %}
 <div class="sidebar">
   <div class="sidebar-new-entry">
     <a href="{{ url_for('users.journal') }}" class="btn-new-entry">+ New Entry</a>
@@ -8,7 +8,7 @@
     {% if entries %}
       {% for entry in entries %}
       <div class="entry{% if not loop.last %} entry--with-border{% endif %}">
-        <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="entry__link">
+        <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="entry__link{% if selected_entry and selected_entry.id == entry.id %} selected{% endif %}">
           <h3 class="entry__title">{{ entry.title }}</h3>
           <time class="entry__date">{{ entry.created_at.strftime('%B %d, %Y') }}</time>
         </a>

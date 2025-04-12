@@ -19,6 +19,8 @@
   --sidebar-date: #9e9e9e;
   --btn-bg: #242438;
   --btn-hover-bg: #2e2e4a;
+  --selected-entry-bg: rgba(255, 255, 255, 0.05);
+  --selected-entry-border: rgba(255, 255, 255, 0.1);
 }
 
 /* "New Entry" button area */
@@ -68,11 +70,19 @@
   color: inherit;
   display: block;
   transition: opacity 0.2s ease;
-  padding: 0.25rem 0.25rem;   /* Reduced vertical padding */
+  padding: 0.75rem 1rem;
   margin-left: 0.15rem;
+  border-radius: 6px;
 }
+
 .entry__link:hover {
   opacity: 0.8;
+  background-color: var(--selected-entry-bg);
+}
+
+.entry__link.selected {
+  opacity: 0.8;
+  background-color: var(--selected-entry-bg);
 }
 
 /* Entry title */
