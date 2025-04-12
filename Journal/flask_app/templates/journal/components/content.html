@@ -83,6 +83,11 @@
             outline: none !important;
             background: transparent !important;
             margin-bottom: 1rem !important;
+            transition: border-color 0.2s ease !important;
+        }
+
+        .journal-title-input.focused {
+            border-bottom: 1px solid #FFFFFF !important; /* White border when focused */
         }
 
         .journal-title-input::placeholder {
@@ -201,6 +206,26 @@
     </style>
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
+        // Set up title input focus events
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleInput = document.querySelector('.journal-title-input');
+            if (titleInput) {
+                // Set initial gray border directly
+                titleInput.style.setProperty('border-top', 'none', 'important');
+                titleInput.style.setProperty('border-left', 'none', 'important');
+                titleInput.style.setProperty('border-right', 'none', 'important');
+                titleInput.style.setProperty('border-bottom', '1px solid #888888', 'important');
+
+                titleInput.addEventListener('focus', function() {
+                    this.style.setProperty('border-bottom', '1px solid #FFFFFF', 'important');
+                });
+
+                titleInput.addEventListener('blur', function() {
+                    this.style.setProperty('border-bottom', '1px solid #888888', 'important');
+                });
+            }
+        });
+
         let quill = null;
 
         function initializeQuill() {
@@ -271,7 +296,7 @@
                     }
                     /* Style for header text size */
                     .ql-editor h1 {
-                        font-size: 2rem !important;
+                        font-size: 1.5rem !important;
                         font-weight: 600 !important;
                         margin-top: 0.5rem !important;
                         margin-bottom: 0.5rem !important;
