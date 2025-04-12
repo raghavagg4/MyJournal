@@ -9,6 +9,10 @@
   margin: 0 auto;
   padding: 0 2rem;
   border: 0.8px solid rgba(255, 255, 255, 0.1);
+  height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .journal-title-input {
@@ -35,10 +39,13 @@
   font-size: 1.1rem !important;
   line-height: 1.7 !important;
   background-color: #1a1a1a !important;
-  min-height: 70vh !important;
-  resize: none;
+  min-height: calc(100vh - 15rem) !important;
+  height: calc(100vh - 15rem) !important;
+  resize: vertical;
   transition: all 0.3s ease;
   color: white !important;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .journal-content-input:focus {
@@ -77,4 +84,11 @@
   padding: 1rem;
   background-color: #1a1a1a;
   border-top: 1px solid #404040;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-right: -2rem;
 }
