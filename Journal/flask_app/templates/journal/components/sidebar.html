@@ -1,22 +1,30 @@
+{% set sidebar_background_color = "#121212" %}
+{% set sidebar_heading_color = "#ffffff" %}
+{% set sidebar_text_color = "#ffffff" %}
+{% set sidebar_date_color = "#9e9e9e" %}
+
 {% macro render_sidebar(entries) %}
-<div class="w-64 border-r bg-white flex flex-col h-full">
-    <div class="p-4 border-b">
-        <a href="{{ url_for('users.journal') }}" class="block w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-center">New Entry</a>
+<div class="w-64 border-r flex flex-col h-full shadow-sm" style="background-color: {{ sidebar_background_color }}; color: {{ sidebar_text_color }};">
+    <div class="px-4 py-8 border-b border-gray-800">
+        <a href="{{ url_for('users.journal') }}" class="block w-full py-3 px-4 rounded-lg text-center" style="background-color: #242438; color: {{ sidebar_text_color }}; font-size: 16px;">New Entry</a>
     </div>
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto pt-4" id="entries-container">
         {% if entries %}
             {% for entry in entries %}
-                <div class="m-2 cursor-pointer hover:bg-gray-100 bg-white rounded-lg shadow-md">
-                    <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="block">
-                        <div class="p-3">
-                            <div class="font-semibold truncate">{{ entry.title }}</div>
-                            <div class="text-xs text-gray-500">{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                <div class="px-4 py-6 mb-2 border-b border-gray-800">
+                    <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="block" style="color: {{ sidebar_text_color }};">
+                        <div class="font-bold text-lg mb-3" style="color: {{ sidebar_text_color }};">{{ entry.title }}</div>
+                        <div class="text-sm" style="color: {{ sidebar_date_color }};">
+                            {{ entry.created_at.strftime('%b %d, %Y') }}
                         </div>
                     </a>
                 </div>
             {% endfor %}
+            <div id="loading-indicator" class="hidden text-center p-6">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mx-auto"></div>
+            </div>
         {% else %}
-            <div class="text-center p-4 text-gray-500">
+            <div class="text-center p-6" style="color: {{ sidebar_date_color }};">
                 <p>No entries yet</p>
             </div>
         {% endif %}
