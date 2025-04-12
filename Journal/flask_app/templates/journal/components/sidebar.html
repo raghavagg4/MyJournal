@@ -1,33 +1,26 @@
-{% set sidebar_background_color = "#121212" %}
-{% set sidebar_heading_color = "#ffffff" %}
-{% set sidebar_text_color = "#ffffff" %}
-{% set sidebar_date_color = "#9e9e9e" %}
-
 {% macro render_sidebar(entries) %}
-<div class="w-64 border-r flex flex-col h-full shadow-sm" style="background-color: {{ sidebar_background_color }}; color: {{ sidebar_text_color }};">
-    <div class="px-4 py-8 border-b border-gray-800">
-        <a href="{{ url_for('users.journal') }}" class="block w-full py-3 px-4 rounded-lg text-center" style="background-color: #242438; color: {{ sidebar_text_color }}; font-size: 16px;">New Entry</a>
-    </div>
-    <div class="flex-1 overflow-y-auto pt-4" id="entries-container">
-        {% if entries %}
-            {% for entry in entries %}
-                <div class="px-4 py-6 mb-2 border-b border-gray-800">
-                    <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="block" style="color: {{ sidebar_text_color }};">
-                        <div class="font-bold text-lg mb-3" style="color: {{ sidebar_text_color }};">{{ entry.title }}</div>
-                        <div class="text-sm" style="color: {{ sidebar_date_color }};">
-                            {{ entry.created_at.strftime('%b %d, %Y') }}
-                        </div>
-                    </a>
-                </div>
-            {% endfor %}
-            <div id="loading-indicator" class="hidden text-center p-6">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mx-auto"></div>
-            </div>
-        {% else %}
-            <div class="text-center p-6" style="color: {{ sidebar_date_color }};">
-                <p>No entries yet</p>
-            </div>
-        {% endif %}
-    </div>
+<div class="sidebar">
+  <div class="sidebar-new-entry">
+    <a href="{{ url_for('users.journal') }}" class="btn-new-entry">+ New Entry</a>
+  </div>
+
+  <div class="sidebar-entries" id="entries-container">
+    {% if entries %}
+      {% for entry in entries %}
+      <div class="entry{% if not loop.last %} entry--with-border{% endif %}">
+        <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="entry__link">
+          <h3 class="entry__title">{{ entry.title }}</h3>
+          <time class="entry__date">{{ entry.created_at.strftime('%B %d, %Y') }}</time>
+        </a>
+      </div>
+      {% endfor %}
+
+      <div id="loading-indicator" class="loader hidden"></div>
+    {% else %}
+      <div class="sidebar-empty">
+        <p>No entries yet</p>
+      </div>
+    {% endif %}
+  </div>
 </div>
 {% endmacro %}
