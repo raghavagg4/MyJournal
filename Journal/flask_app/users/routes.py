@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, url_for, render_template, flash, request
+from flask import Blueprint, redirect, url_for, render_template, flash, request, jsonify
 from flask_login import current_user, login_required, login_user, logout_user
 from .. import bcrypt, db
 from ..forms import RegistrationForm, LoginForm, JournalEntryForm
@@ -28,37 +28,59 @@ def welcome():
 def journal(entry_id=None):
     form = JournalEntryForm()
     selected_entry = None
-    decrypted_entries = []
-
-    # Load entries with pagination
+    
+    # Pagination parameters
     page = request.args.get('page', 1, type=int)
     per_page = 10  # Number of entries per page
 
+    # Get paginated journal entries for the current user
     try:
-        # Get entries with projection to only fetch needed fields
-        entries = JournalEntry.objects(user=current_user.id).only(
-            'title', 'created_at', 'updated_at'
-        ).order_by('-created_at').paginate(page=page, per_page=per_page)
-
-        # Decrypt only the entries for the current page
+        entries = JournalEntry.objects(user=current_user.id).order_by('-created_at').paginate(page=page, per_page=per_page)
+        
+        # Decrypt entries for display
+        decrypted_entries = []
         for entry in entries.items:
-            decrypted_entries.append({
-                'id': str(entry.id),
-                'title': entry.title,
-                'created_at': entry.created_at,
-                'updated_at': entry.updated_at
-            })
-
-        if entry_id:
-            # Load only the selected entry with all fields
-            selected_entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
-            if selected_entry:
-                form.title.data = selected_entry.title
-                form.content.data = selected_entry.decrypt_content()
-
+            try:
+                decrypted_content = entry.decrypt_content()
+                decrypted_entries.append({
+                    'id': str(entry.id),
+                    'title': entry.title,
+                    'content': decrypted_content,
+                    'created_at': entry.created_at,
+                    'updated_at': entry.updated_at
+                })
+            except Exception as e:
+                # If decryption fails, show a placeholder
+                decrypted_entries.append({
+                    'id': str(entry.id),
+                    'title': entry.title,
+                    'content': "Error decrypting entry",
+                    'created_at': entry.created_at,
+                    'updated_at': entry.updated_at
+                })
     except Exception as e:
         flash(f"Error loading journal entries: {str(e)}")
-        entries = []
+        decrypted_entries = []
+        entries = None
+
+    # If an entry_id is provided, load that specific entry
+    if entry_id:
+        try:
+            # Find the selected entry in the decrypted entries
+            for entry in decrypted_entries:
+                if entry['id'] == entry_id:
+                    selected_entry = entry
+                    form.title.data = entry['title']
+                    form.content.data = entry['content']
+                    break
+
+            if not selected_entry:
+                flash("Journal entry not found.")
+                return redirect(url_for("users.journal"))
+
+        except Exception as e:
+            flash(f"Error loading journal entry: {str(e)}")
+            return redirect(url_for("users.journal"))
 
     if form.validate_on_submit():
         try:
@@ -96,7 +118,15 @@ def journal(entry_id=None):
         except Exception as e:
             flash(f"Error saving journal entry: {str(e)}")
 
-    return render_template("journal/index.html", form=form, entries=decrypted_entries, selected_entry=selected_entry)
+    # If it's an AJAX request, return JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({
+            'entries': decrypted_entries,
+            'has_next': entries.has_next if entries else False,
+            'next_page': entries.next_num if entries and entries.has_next else None
+        })
+
+    return render_template("journal.html", form=form, entries=decrypted_entries, selected_entry=selected_entry, has_next=entries.has_next if entries else False)
 
 @users.route("/journal/<entry_id>/delete", methods=["POST"])
 @login_required
