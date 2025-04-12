@@ -27,96 +27,33 @@ def welcome():
 @login_required
 def journal(entry_id=None):
     form = JournalEntryForm()
-    selected_entry = None
-    print("DEBUG: Journal route accessed")
-
-    # Pagination parameters
-    page = request.args.get('page', 1, type=int)
-    per_page = 10  # Number of entries per page
-
-    # Get paginated journal entries for the current user
-    try:
-        entries = JournalEntry.objects(user=current_user.id).order_by('-created_at').paginate(page=page, per_page=per_page)
-        print("DEBUG: Successfully retrieved journal entries")
-
-        # Decrypt entries for display
-        decrypted_entries = []
-        for entry in entries.items:
-            try:
-                decrypted_content = entry.decrypt_content()
-                decrypted_entries.append({
-                    'id': str(entry.id),
-                    'title': entry.title,
-                    'content': decrypted_content,
-                    'created_at': entry.created_at,
-                    'updated_at': entry.updated_at
-                })
-            except Exception as e:
-                print(f"DEBUG: Error decrypting entry: {str(e)}")
-                # If decryption fails, show a placeholder
-                decrypted_entries.append({
-                    'id': str(entry.id),
-                    'title': entry.title,
-                    'content': "Error decrypting entry",
-                    'created_at': entry.created_at,
-                    'updated_at': entry.updated_at
-                })
-    except Exception as e:
-        print(f"DEBUG: Error loading journal entries: {str(e)}")
-        flash(f"Error loading journal entries: {str(e)}")
-        decrypted_entries = []
-        entries = None
-
-    # If an entry_id is provided, load that specific entry
-    if entry_id:
-        try:
-            print(f"DEBUG: Loading specific entry with ID: {entry_id}")
-            # Find the selected entry in the decrypted entries
-            for entry in decrypted_entries:
-                if entry['id'] == entry_id:
-                    selected_entry = entry
-                    form.title.data = entry['title']
-                    form.content.data = entry['content']
-                    break
-
-            if not selected_entry:
-                print("DEBUG: Journal entry not found")
-                flash("Journal entry not found.")
-                return redirect(url_for("users.journal"))
-
-        except Exception as e:
-            print(f"DEBUG: Error loading journal entry: {str(e)}")
-            flash(f"Error loading journal entry: {str(e)}")
-            return redirect(url_for("users.journal"))
 
     if form.validate_on_submit():
         print("DEBUG: Form submitted and validated")
         try:
-            # Encrypt the journal entry content
-            print("DEBUG: Encrypting content")
             encrypted_content = JournalEntry.encrypt_content(
                 form.content.data,
                 str(current_user.id)
             )
 
-            if selected_entry:
-                print("DEBUG: Updating existing entry")
-                # Update existing entry
-                entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
-                if entry:
-                    entry.update(
+            if entry_id:
+                print(f"DEBUG: Attempting to update entry with ID: {entry_id}")
+                entry_to_update = JournalEntry.objects(id=entry_id, user=current_user.id).first()
+                if entry_to_update:
+                    entry_to_update.update(
                         title=form.title.data,
                         content=encrypted_content,
                         updated_at=datetime.now()
                     )
-                    print("DEBUG: Entry updated successfully")
+                    print("DEBUG: Entry update successful")
                     flash("Journal entry updated successfully!")
+                    return redirect(url_for("users.journal", entry_id=entry_id))
                 else:
-                    print("DEBUG: Entry not found for update")
-                    flash("Journal entry not found.")
+                    print(f"DEBUG: Entry {entry_id} not found or access denied during update attempt.")
+                    flash("Journal entry not found or access denied.")
+                    return redirect(url_for("users.journal"))
             else:
                 print("DEBUG: Creating new entry")
-                # Create new entry
                 entry = JournalEntry(
                     user=current_user.id,
                     title=form.title.data,
@@ -127,31 +64,78 @@ def journal(entry_id=None):
                 entry.save()
                 print("DEBUG: New entry saved successfully")
                 flash("Journal entry saved successfully!")
-                # Set the entry_id to the newly created entry
-                entry_id = str(entry.id)
-
-            # Instead of redirecting, reload the current page with the updated entry
-            return redirect(url_for("users.journal", entry_id=entry_id))
+                return redirect(url_for("users.journal", entry_id=str(entry.id)))
 
         except Exception as e:
-            print(f"DEBUG: Error saving journal entry: {str(e)}")
-            flash(f"Error saving journal entry: {str(e)}")
+            print(f"ERROR: Error saving/updating journal entry: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            flash(f"An error occurred while saving the entry. Please try again.")
 
-    # If it's an AJAX request, return JSON
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({
-            'entries': decrypted_entries,
-            'has_next': entries.has_next if entries else False,
-            'next_page': entries.next_num if entries and entries.has_next else None
-        })
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    entries_obj = None
+    decrypted_entries = []
+    try:
+        entries_obj = JournalEntry.objects(user=current_user.id).order_by('-created_at').paginate(page=page, per_page=per_page)
 
-    return render_template("journal/index.html", form=form, entries=decrypted_entries, selected_entry=selected_entry, has_next=entries.has_next if entries else False)
+        for entry in entries_obj.items:
+            try:
+                decrypted_entries.append({
+                    'id': str(entry.id),
+                    'title': entry.title,
+                    'created_at': entry.created_at,
+                    'updated_at': entry.updated_at
+                })
+            except Exception as e:
+                print(f"DEBUG: Error processing entry for list: {entry.id} - {e}")
+                decrypted_entries.append({
+                    'id': str(entry.id),
+                    'title': "Error processing title",
+                    'created_at': None,
+                    'updated_at': None
+                })
+
+    except Exception as e:
+        print(f"ERROR: Error loading journal entries for render: {str(e)}")
+        flash(f"Error loading journal entries list.")
+        entries_obj = None
+        decrypted_entries = []
+
+    current_selected_entry = None
+    if entry_id:
+        try:
+            entry_obj = JournalEntry.objects(id=entry_id, user=current_user.id).first()
+            if entry_obj:
+                current_selected_entry = {
+                    'id': str(entry_obj.id),
+                    'title': entry_obj.title,
+                    'content': entry_obj.decrypt_content(),
+                    'created_at': entry_obj.created_at,
+                    'updated_at': entry_obj.updated_at
+                }
+                if not form.is_submitted():
+                    form.title.data = current_selected_entry['title']
+                    form.content.data = current_selected_entry['content']
+            else:
+                if not flash:
+                    flash("Journal entry not found or access denied.")
+                return redirect(url_for("users.journal"))
+        except Exception as e:
+            print(f"ERROR: Error loading specific journal entry {entry_id}: {str(e)}")
+            if not flash: flash(f"Error loading journal entry.")
+            return redirect(url_for("users.journal"))
+
+    return render_template("journal/index.html",
+                           form=form,
+                           entries=decrypted_entries,
+                           selected_entry=current_selected_entry,
+                           pagination=entries_obj)
 
 @users.route("/journal/<entry_id>/delete", methods=["POST"])
 @login_required
 def delete_entry(entry_id):
     try:
-        # Ensure the entry belongs to the current user
         entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
         if entry:
             entry.delete()
@@ -223,16 +207,13 @@ def admin():
         action = request.form.get("action")
         if action == "show_all_entries":
             try:
-                # Get all collections from the database
                 collections = db.connection.get_database(db.get_db().name).list_collection_names()
                 all_entries = {}
 
-                # Fetch only email fields from each collection
                 for collection_name in collections:
                     collection = db.connection.get_database(db.get_db().name)[collection_name]
-                    # Only fetch documents that have an email field
                     entries = list(collection.find({"email": {"$exists": True}}, {"email": 1, "_id": 0}))
-                    if entries:  # Only add collections that have entries with emails
+                    if entries:
                         all_entries[collection_name] = entries
             except Exception as e:
                 flash(f"Error fetching entries: {str(e)}", "error")
@@ -243,11 +224,9 @@ def admin():
                     flash("Please provide an email address", "error")
                     return render_template("admin.html", all_entries=all_entries)
 
-                # Get all collections
                 collections = db.connection.get_database(db.get_db().name).list_collection_names()
                 deleted = False
 
-                # Try to delete from each collection
                 for collection_name in collections:
                     collection = db.connection.get_database(db.get_db().name)[collection_name]
                     result = collection.delete_many({"email": email})
