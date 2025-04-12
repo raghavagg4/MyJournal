@@ -2,11 +2,14 @@
 <div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6">
     <div class="flex-1 overflow-y-auto w-full h-full">
         <div class="h-full w-full flex flex-col max-w-4xl mx-auto journal-content-wrapper">
-            <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col w-full flex-grow">
+            <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col">
                 {{ form.csrf_token }}
+                {% if selected_entry %}
+                    <input type="hidden" name="entry_id" value="{{ selected_entry.id }}">
+                {% endif %}
 
                 <div>
-                    {{ form.title(class="journal-title-input w-full", placeholder="Title your journal entry...") }}
+                    {{ form.title(class="journal-title-input w-full", placeholder="Title your journal entry...", value=selected_entry.title if selected_entry else '') }}
                     {% if form.title.errors %}
                         <div class="text-red-500 text-xs mt-1 px-4">
                             {% for error in form.title.errors %}
@@ -31,14 +34,18 @@
                     {{ form.submit(class="journal-button journal-save-button text-white") }}
 
                     {% if selected_entry %}
-                        <form method="POST" action="{{ url_for('users.delete_entry', entry_id=selected_entry.id) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                            <button type="submit" class="journal-button journal-delete-button text-white">
-                                Delete
-                            </button>
-                        </form>
+                        <button type="button" onclick="document.getElementById('delete-form').submit()" class="journal-button journal-delete-button text-white">
+                            Delete
+                        </button>
                     {% endif %}
                 </div>
             </form>
+
+            {% if selected_entry %}
+                <form id="delete-form" method="POST" action="{{ url_for('users.delete_entry', entry_id=selected_entry.id) }}" class="hidden" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                    {{ form.csrf_token }}
+                </form>
+            {% endif %}
         </div>
     </div>
 </div>
