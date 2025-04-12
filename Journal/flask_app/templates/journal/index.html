@@ -1,0 +1,10 @@
+{% extends "header.html" %}
+{% from "journal/components/sidebar.html" import render_sidebar %}
+{% from "journal/components/content.html" import render_journal_content %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-50 overflow-hidden">
+    {{ render_sidebar(entries) }}
+    {{ render_journal_content(form, selected_entry) }}
+</div>
+{% endblock %}

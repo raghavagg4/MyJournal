@@ -1,0 +1,25 @@
+{% macro render_sidebar(entries) %}
+<div class="w-64 border-r bg-white flex flex-col h-full">
+    <div class="p-4 border-b">
+        <a href="{{ url_for('users.journal') }}" class="block w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-center">New Entry</a>
+    </div>
+    <div class="flex-1 overflow-y-auto">
+        {% if entries %}
+            {% for entry in entries %}
+                <div class="m-2 cursor-pointer hover:bg-gray-100 bg-white rounded-lg shadow-md">
+                    <a href="{{ url_for('users.journal', entry_id=entry.id) }}" class="block">
+                        <div class="p-3">
+                            <div class="font-semibold truncate">{{ entry.title }}</div>
+                            <div class="text-xs text-gray-500">{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center p-4 text-gray-500">
+                <p>No entries yet</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
