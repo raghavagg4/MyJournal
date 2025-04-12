@@ -1,0 +1,76 @@
+{% extends "header.html" %}
+{% block content %}
+<div class="container mx-auto w-full md:w-2/3 lg:w-1/3">
+    <h2 class="text-2xl font-bold text-center mb-6">AI Assistant</h2>
+
+    <div class="p-6 bg-gray-100 rounded-lg shadow-md">
+        <div id="chat-container" class="mb-4 p-4 bg-white rounded-lg h-64 overflow-y-auto">
+            <!-- Chat messages will appear here -->
+        </div>
+        
+        <div class="flex gap-2">
+            <input type="text" id="message-input" 
+                   class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   style="color: #1f2937 !important;"
+                   placeholder="Type your message here...">
+            <button id="send-message" 
+                    class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+                Send
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('send-message').addEventListener('click', async () => {
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value.trim();
+    
+    if (!message) {
+        alert('Please enter a message');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/ai-assistant', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            console.error('Error:', data.error);
+            return;
+        }
+        
+        const chatContainer = document.getElementById('chat-container');
+        
+        // Add user message
+        chatContainer.innerHTML += `
+            <div class="mb-2">
+                <p class="text-gray-600">You:</p>
+                <p class="bg-gray-100 p-2 rounded-lg">${message}</p>
+            </div>
+        `;
+        
+        // Add AI response
+        chatContainer.innerHTML += `
+            <div class="mb-2">
+                <p class="text-gray-600">AI Assistant:</p>
+                <p class="bg-blue-100 p-2 rounded-lg">${data.response}</p>
+            </div>
+        `;
+        
+        // Clear input and scroll to bottom
+        messageInput.value = '';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+</script>
+{% endblock %} 
