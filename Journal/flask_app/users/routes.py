@@ -28,53 +28,37 @@ def welcome():
 def journal(entry_id=None):
     form = JournalEntryForm()
     selected_entry = None
+    decrypted_entries = []
 
-    # Get all journal entries for the current user
+    # Load entries with pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Number of entries per page
+
     try:
-        entries = JournalEntry.objects(user=current_user.id).order_by('-created_at')
-        # Decrypt entries for display
-        decrypted_entries = []
-        for entry in entries:
-            try:
-                decrypted_content = entry.decrypt_content()
-                decrypted_entries.append({
-                    'id': str(entry.id),
-                    'title': entry.title,
-                    'content': decrypted_content,
-                    'created_at': entry.created_at,
-                    'updated_at': entry.updated_at
-                })
-            except Exception as e:
-                # If decryption fails, show a placeholder
-                decrypted_entries.append({
-                    'id': str(entry.id),
-                    'title': entry.title,
-                    'content': "Error decrypting entry",
-                    'created_at': entry.created_at,
-                    'updated_at': entry.updated_at
-                })
+        # Get entries with projection to only fetch needed fields
+        entries = JournalEntry.objects(user=current_user.id).only(
+            'title', 'created_at', 'updated_at'
+        ).order_by('-created_at').paginate(page=page, per_page=per_page)
+
+        # Decrypt only the entries for the current page
+        for entry in entries.items:
+            decrypted_entries.append({
+                'id': str(entry.id),
+                'title': entry.title,
+                'created_at': entry.created_at,
+                'updated_at': entry.updated_at
+            })
+
+        if entry_id:
+            # Load only the selected entry with all fields
+            selected_entry = JournalEntry.objects(id=entry_id, user=current_user.id).first()
+            if selected_entry:
+                form.title.data = selected_entry.title
+                form.content.data = selected_entry.decrypt_content()
+
     except Exception as e:
         flash(f"Error loading journal entries: {str(e)}")
-        decrypted_entries = []
-
-    # If an entry_id is provided, load that specific entry
-    if entry_id:
-        try:
-            # Find the selected entry in the decrypted entries
-            for entry in decrypted_entries:
-                if entry['id'] == entry_id:
-                    selected_entry = entry
-                    form.title.data = entry['title']
-                    form.content.data = entry['content']
-                    break
-
-            if not selected_entry:
-                flash("Journal entry not found.")
-                return redirect(url_for("users.journal"))
-
-        except Exception as e:
-            flash(f"Error loading journal entry: {str(e)}")
-            return redirect(url_for("users.journal"))
+        entries = []
 
     if form.validate_on_submit():
         try:
