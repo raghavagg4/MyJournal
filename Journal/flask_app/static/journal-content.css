@@ -1,7 +1,7 @@
 /* Journal Content Styling */
 .journal-content-wrapper {
-  background-color: #ffffff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  background-color: #1a1a1a;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -9,17 +9,20 @@
 
 .journal-title-input {
   border: none !important;
-  border-bottom: 2px solid #e2e8f0 !important;
+  border-bottom: 2px solid #404040 !important;
   border-radius: 0 !important;
   padding: 1rem !important;
   font-size: 1.5rem !important;
   font-weight: 600 !important;
   transition: all 0.3s ease;
+  color: white !important;
+  background-color: #1a1a1a !important;
 }
 
 .journal-title-input:focus {
-  border-bottom: 2px solid #4299e1 !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5) !important;
   box-shadow: none !important;
+  outline: none !important;
 }
 
 .journal-content-input {
@@ -27,15 +30,17 @@
   padding: 1.5rem !important;
   font-size: 1.1rem !important;
   line-height: 1.7 !important;
-  background-color: #f8fafc !important;
+  background-color: #1a1a1a !important;
   min-height: 70vh !important;
   resize: none;
   transition: all 0.3s ease;
+  color: white !important;
 }
 
 .journal-content-input:focus {
-  background-color: #ffffff !important;
+  background-color: #1a1a1a !important;
   box-shadow: none !important;
+  outline: none !important;
 }
 
 .journal-button {
@@ -66,6 +71,6 @@
 
 .journal-button-wrapper {
   padding: 1rem;
-  background-color: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+  background-color: #1a1a1a;
+  border-top: 1px solid #404040;
 }
