@@ -7,4 +7,20 @@
     {{ render_sidebar(entries, selected_entry) }}
     {{ render_journal_content(form, selected_entry) }}
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Split(['#sidebar-panel', '#content-panel'], {
+            sizes: [25, 75], // Initial sizes in percentage
+            minSize: [200, 300], // Minimum size in pixels
+            gutterSize: 10, // Size of the gutter
+            cursor: 'col-resize',
+            elementStyle: (dimension, size, gutterSize) => ({
+                'flex-basis': `calc(${size}% - ${gutterSize}px`,
+            }),
+            gutterStyle: (dimension, gutterSize) => ({
+                'flex-basis': `${gutterSize}px`,
+            }),
+        });
+    });
+</script>
 {% endblock %}

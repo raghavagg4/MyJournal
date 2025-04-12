@@ -1,6 +1,6 @@
 /* Sidebar container */
 .sidebar {
-  width: 15rem;              /* Increased width */
+  /* width: 15rem; */              /* Increased width - Removed for split.js */
   display: flex;
   flex-direction: column;
   height: 100vh;
