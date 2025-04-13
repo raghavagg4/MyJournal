@@ -230,17 +230,32 @@
         <div id="floating-buttons" style="display: none; position: absolute; bottom: 90px; right: 0px;">
             <div class="flex flex-col gap-4 items-end">
                 <button onclick="insertDeepThoughtPrompt()" class="rounded-full bg-indigo-600 p-2 shadow-lg hover:bg-indigo-700 transition-all flex items-center" title="Go Deeper" style="min-width: 150px;">
-                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Go Deeper" style="width: 40px; height: 40px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="#C5A880" viewBox="0 0 24 24" width="30" height="30">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
+                                 10-4.48 10-10S17.52 2 12 2zm0 18
+                                 c-4.41 0-8-3.59-8-8s3.59-8 8-8
+                                 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
                     <span class="text-white ml-2 font-medium">Go Deeper</span>
                 </button>
 
                 <button onclick="insertPerspectivePrompt()" class="rounded-full bg-green-600 p-2 shadow-lg hover:bg-green-700 transition-all flex items-center" title="Get Perspective" style="min-width: 150px;">
-                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Get Perspective" style="width: 40px; height: 40px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="#C5A880" viewBox="0 0 24 24" width="30" height="30">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
+                                 10-4.48 10-10S17.52 2 12 2zm0 18
+                                 c-4.41 0-8-3.59-8-8s3.59-8 8-8
+                                 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
                     <span class="text-white ml-2 font-medium">Get Perspective</span>
                 </button>
 
                 <button onclick="alert('Button 3 clicked')" class="rounded-full bg-red-600 p-2 shadow-lg hover:bg-red-700 transition-all flex items-center" title="Button 3" style="min-width: 150px;">
-                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Button 3" style="width: 40px; height: 40px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="#C5A880" viewBox="0 0 24 24" width="30" height="30">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
+                                 10-4.48 10-10S17.52 2 12 2zm0 18
+                                 c-4.41 0-8-3.59-8-8s3.59-8 8-8
+                                 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
                     <span class="text-white ml-2 font-medium">Button 3</span>
                 </button>
             </div>
