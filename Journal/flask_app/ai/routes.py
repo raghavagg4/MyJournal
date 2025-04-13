@@ -71,3 +71,39 @@ def go_deeper():
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@ai.route("/get-perspective", methods=["GET", "POST"])
+@login_required
+def get_perspective():
+    try:
+        # Initialize the model with the latest version
+        model = genai.GenerativeModel('gemini-2.0-flash-lite')
+
+        # Get the text from either GET or POST request
+        if request.method == "GET":
+            text = request.args.get('text', '')
+        else:
+            data = request.get_json()
+            text = data.get('text', '')
+
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        # Create a refined prompt to generate an alternative perspective
+        prompt = (
+    "You are an empathetic perspective-giving assistant helping users see different viewpoints about their journal entries. "
+    "Given the following journal entry, provide one concise alternative perspective or insight that might help the user. "
+    "The perspective must:\n"
+    "1. Offer a compassionate, alternative way of looking at the situation.\n"
+    "2. Highlight potential positive aspects or growth opportunities not mentioned.\n"
+    "3. Be validating and non-judgmental of the user's experience.\n"
+    f"Journal entry: {text}\n")
+
+        # Generate responses
+        response = model.generate_content(prompt)
+
+        # Return the response as JSON
+        return jsonify({"perspective": response.text})
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
