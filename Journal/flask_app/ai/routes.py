@@ -124,7 +124,7 @@ def get_whispers():
 
         # Create a prompt for the Gemini API - Updated for "Get Direction"
         prompt = f"""You are a thoughtful guide helping someone journal. Based on their previous entry (if any), ask a fresh, engaging question that encourages reflection and exploration of new topics.
-Just aks the question. don't include anything else in your repsonse.
+Just aks the question. don't include anything else in your repsonse. The question should be simple.
         Previous Entry:
         {text}
 

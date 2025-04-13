@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- 3rd circle -->
+  <circle
+    cx="150" cy="150" r="60"
+    fill="none"
+    stroke="var(--stroke-color, #C5A880)"
+    stroke-width="10"
+    stroke-dasharray="50 20 40 60"
+    stroke-dashoffset="20"
+    stroke-linecap="round"
+  />
+  <!-- Inner circle -->
+  <circle
+    cx="150" cy="150" r="35"
+    fill="none"
+    stroke="var(--stroke-color, #C5A880)"
+    stroke-width="10"
+    stroke-dasharray="35 25 20 30"
+    stroke-dashoffset="10"
+    stroke-linecap="round"
+  />
+</svg>
