@@ -1,5 +1,10 @@
 {% macro render_sidebar(entries, selected_entry) %}
-<div class="sidebar" id="sidebar-panel">
+<div class="sidebar" id="sidebar-panel" style="padding-top: 0;">
+  <div style="height: 30px;"></div>
+  <div class="sidebar-logo m-4 flex items-center gap-3" style="margin-top: 0; margin-left: 1.5rem;">
+    <img src="{{ url_for('static', filename='assets/logo-white.svg') }}" alt="Polaris Logo" style="width: 60px; height: 60px;">
+    <span class="text-white text-4xl font-medium">Polaris</span>
+  </div>
   <div class="sidebar-new-entry">
     <a href="{{ url_for('users.journal') }}" class="btn-new-entry">+ New Entry</a>
   </div>

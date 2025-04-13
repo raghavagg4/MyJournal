@@ -1,7 +1,7 @@
 {% macro render_journal_content(form, selected_entry) %}
 {% from "journal/components/stars.html" import render_stars %}
 {{ render_stars() }}
-<div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6 relative" id="content-panel">
+<div class="flex-1 flex flex-col h-screen w-full overflow-hidden p-6 pt-16 pl-20 relative" id="content-panel" style="margin-top: 40px;">
     <!-- Add Quill CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <!-- Add Google Font -->

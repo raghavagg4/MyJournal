@@ -8,7 +8,10 @@
   color: var(--sidebar-text);
   border-right: 1px solid rgba(255,255,255,0.1);
   box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  padding: 0.25rem 0;        /* Reduced vertical padding */
+  padding: 0;                /* Remove all padding */
+  position: relative;
+  z-index: 50;
+  margin-top: 0;
 }
 
 /* CSS variables for easy theming */

@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 {% block header %}
-<nav class="navbar flex w-full justify-between z-40">
-    <div class="m-5 flex items-center gap-5">
-        <img src="{{ url_for('static', filename='assets/logo-white.svg') }}" alt="Polaris Logo" style="width: 48px; height: 48px;">
-        <span class="text-white text-3xl font-medium">Polaris</span>
-    </div>
+<nav class="navbar flex w-full justify-between z-30" style="height: 56px; min-height: 56px; overflow: visible;">
+    <div class="m-5"></div>
     {% if current_user.is_authenticated %}
-    <div class="flex items-center space-x-4 my-5 mr-5">
-        <a class="my-5 mr-5 ml-0 navlink !bg-red-400/20 hover:!bg-red-500/50 !text-red-400 hover:!text-red-300" href="{{ url_for('users.logout') }}">Logout</a>
+    <div class="flex items-center space-x-4 mr-5" style="margin-top: 30px;">
+        <a class="navlink !bg-red-400/20 hover:!bg-red-500/50 !text-red-400 hover:!text-red-300" href="{{ url_for('users.logout') }}">Logout</a>
     </div>
     {% else %}
     <div class="flex items-center space-x-4 my-5 mr-5">

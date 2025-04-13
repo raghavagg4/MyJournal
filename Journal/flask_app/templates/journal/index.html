@@ -3,7 +3,7 @@
 {% from "journal/components/content.html" import render_journal_content %}
 
 {% block content %}
-<div class="flex h-screen bg-gray-50 overflow-hidden">
+<div class="flex h-screen bg-gray-50 overflow-hidden" style="margin-top: -56px;">
     {{ render_sidebar(entries, selected_entry) }}
     {{ render_journal_content(form, selected_entry) }}
 </div>
