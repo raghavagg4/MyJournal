@@ -22,4 +22,18 @@
     <animate attributeName="stroke-opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite" />
   </circle>
 
+  <!-- Second Circle Layer -->
+  <circle
+    cx="220" cy="220" r="240"
+    fill="none"
+    stroke="var(--stroke-color, #D5B890)"
+    stroke-width="6"
+    stroke-dasharray="15 25 20 40"
+    stroke-dashoffset="5"
+    stroke-linecap="round"
+    filter="url(#glow)">
+    <animate attributeName="stroke-dashoffset" from="200" to="0" dur="25s" repeatCount="indefinite" />
+    <animate attributeName="stroke-opacity" values="0.6;0.9;0.6" dur="6s" repeatCount="indefinite" />
+  </circle>
+
 </svg>

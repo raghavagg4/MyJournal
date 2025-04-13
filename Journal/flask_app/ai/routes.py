@@ -119,7 +119,8 @@ def get_perspective():
             f"1. Offer a compassionate, alternative way of looking at the situation described in the MOST RECENT entry.\\n"
             f"2. Consider the context of past entries if relevant, but focus on the recent one.\\n"
             f"3. Highlight potential positive aspects or growth opportunities related to the recent entry.\\n"
-            f"4. Be validating and non-judgmental of the user's experience.\\n\\n"
+            f"4. Be validating and non-judgmental of the user's experience.\\n"
+            f"Keep youur response less then 100 words\\n\\n"
             f"MOST RECENT Journal entry:\\n{text}\\n\\n"
             f"--- PAST ENTRIES --- \\n{all_entries_text}\\n--- END PAST ENTRIES ---"
         )
