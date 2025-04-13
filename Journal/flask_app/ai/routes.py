@@ -112,18 +112,17 @@ def get_perspective():
 
         # Create a refined prompt to generate an alternative perspective, including past entries
         prompt = (
-            f"You are an empathetic perspective-giving assistant helping users see different viewpoints about their journal entries."
-            f"You guide the user, show them the way, give them wise advice. Try your best toanalyze common patterns in the past entries, mention them in your response and use user's past to guide them\\n"
-            f"Given the following recent journal entry AND the user's past entries, provide one concise alternative perspective or insight that might help the user about their MOST RECENT entry ({text})."
-            f"The perspective must:\\n"
-            f"1. Offer a compassionate, alternative way of looking at the situation described in the MOST RECENT entry.\\n"
-            f"2. Consider the context of past entries if relevant, but focus on the recent one.\\n"
-            f"3. Highlight potential positive aspects or growth opportunities related to the recent entry.\\n"
-            f"4. Be validating and non-judgmental of the user's experience.\\n"
-            f"Keep youur response less then 100 words\\n\\n"
-            f"MOST RECENT Journal entry:\\n{text}\\n\\n"
-            f"--- PAST ENTRIES --- \\n{all_entries_text}\\n--- END PAST ENTRIES ---"
-        )
+           "You are an empathetic assistant helping users gain new, compassionate insights from their journal entries. "
+           "Review the current journal entry provided below, along with the user's past. Identify relevant patterns from past entries that align closely with the current situation. "
+           "Using these insights, provide one concise perspective or insight about the current entry. Your response must:\n"
+           "1. Offer a compassionate viewpoint that reframes the situation positively or constructively. Could be both positive and negative.\n"
+           "2. Reference relevant patterns or themes from the user's past. Only chose to include the most relevant ones with the current situation.\n"
+           "Keep your response under 100 words.\n\n"
+           f"CURRENT JOURNAL ENTRY:\n{text}\n\n"
+           f"---  USER PAST ---\n{all_entries_text}\n--- USER PAST ---"
+       )
+
+
 
         # Generate responses
         response = model.generate_content(prompt)
