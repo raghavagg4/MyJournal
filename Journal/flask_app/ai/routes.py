@@ -3,6 +3,8 @@ from flask_login import login_required, current_user
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+from ..models import JournalEntry  # Updated import to use JournalEntry instead of Journal
+from cryptography.fernet import InvalidToken # Import the specific exception
 
 load_dotenv()
 
@@ -88,16 +90,39 @@ def get_perspective():
         if not text:
             return jsonify({"error": "No text provided"}), 400
 
-        # Create a refined prompt to generate an alternative perspective
+        # Fetch all journal entries for the current user using MongoEngine syntax
+        user_entries = JournalEntry.objects(user=current_user.id).order_by('-created_at').all()
+
+        # Process entries, handling potential decryption errors individually
+        past_entries_parts = []
+        for entry in user_entries:
+            try:
+                decrypted_content = entry.decrypt_content()
+                past_entries_parts.append(f"Date: {entry.created_at.strftime('%Y-%m-%d')}\\n{decrypted_content}")
+            except InvalidToken:
+                # Handle entries that cannot be decrypted (e.g., due to old salt)
+                print(f"Warning: Could not decrypt entry with ID {entry.id} created at {entry.created_at}. Skipping.")
+                past_entries_parts.append(f"Date: {entry.created_at.strftime('%Y-%m-%d')}\\n[Content could not be decrypted]")
+            except Exception as decrypt_err:
+                # Catch other potential errors during decryption
+                print(f"Warning: Error processing entry ID {entry.id}: {repr(decrypt_err)}")
+                past_entries_parts.append(f"Date: {entry.created_at.strftime('%Y-%m-%d')}\\n[Error processing content]")
+
+        all_entries_text = "\\n---\\n".join(past_entries_parts)
+
+        # Create a refined prompt to generate an alternative perspective, including past entries
         prompt = (
-    "You are an empathetic perspective-giving assistant helping users see different viewpoints about their journal entries."
-    "You guide the user, show them the way, give them wise advice."
-    "Given the following journal entry, provide one concise alternative perspective or insight that might help the user. "
-    "The perspective must:\n"
-    "1. Offer a compassionate, alternative way of looking at the situation.\n"
-    "2. Highlight potential positive aspects or growth opportunities not mentioned.\n"
-    "3. Be validating and non-judgmental of the user's experience.\n"
-    f"Journal entry: {text}\n")
+            f"You are an empathetic perspective-giving assistant helping users see different viewpoints about their journal entries."
+            f"You guide the user, show them the way, give them wise advice. Try your best toanalyze common patterns in the past entries, mention them in your response and use user's past to guide them\\n"
+            f"Given the following recent journal entry AND the user's past entries, provide one concise alternative perspective or insight that might help the user about their MOST RECENT entry ({text})."
+            f"The perspective must:\\n"
+            f"1. Offer a compassionate, alternative way of looking at the situation described in the MOST RECENT entry.\\n"
+            f"2. Consider the context of past entries if relevant, but focus on the recent one.\\n"
+            f"3. Highlight potential positive aspects or growth opportunities related to the recent entry.\\n"
+            f"4. Be validating and non-judgmental of the user's experience.\\n\\n"
+            f"MOST RECENT Journal entry:\\n{text}\\n\\n"
+            f"--- PAST ENTRIES --- \\n{all_entries_text}\\n--- END PAST ENTRIES ---"
+        )
 
         # Generate responses
         response = model.generate_content(prompt)
@@ -105,7 +130,11 @@ def get_perspective():
         # Return the response as JSON
         return jsonify({"perspective": response.text})
     except Exception as e:
-        print(f"Error: {str(e)}")
+        # Improved error logging
+        print(f"Error in /get-perspective: {str(e)} ({repr(e)})")
+        # Also print traceback for more context
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @ai.route('/get-whispers', methods=["GET", "POST"])
