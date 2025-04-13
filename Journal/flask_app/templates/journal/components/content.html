@@ -11,7 +11,6 @@
         #editor-container {
             border: none !important;
             overflow-y: auto;
-            height: 100%;
         }
         .ql-toolbar.ql-snow {
             border: none !important;
@@ -177,7 +176,7 @@
         }
     </style>
 
-    <div class="flex-1 w-full h-full">
+    <div class="flex-1 w-full">
         <div class="h-full w-full flex flex-col max-w-4xl mx-auto journal-content-wrapper">
             <form method="POST" action="{% if selected_entry %}{{ url_for('users.journal', entry_id=selected_entry.id) }}{% else %}{{ url_for('users.journal') }}{% endif %}" class="h-full flex flex-col">
                 {{ form.csrf_token }}
@@ -196,8 +195,8 @@
                     {% endif %}
                 </div>
 
-                <div class="flex-grow" style="overflow: hidden;">
-                    <div id="editor-container" class="h-full border rounded-md">{{ selected_entry.content|safe if selected_entry else '' }}</div>
+                <div class="flex-grow">
+                    <div id="editor-container" class="border rounded-md">{{ selected_entry.content|safe if selected_entry else '' }}</div>
                     {{ form.content(class="journal-content-input hidden", id="hidden-content") }}
                     {% if form.content.errors %}
                         <div class="text-red-500 text-xs mt-1 px-4">

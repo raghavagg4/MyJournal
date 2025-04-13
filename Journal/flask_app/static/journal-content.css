@@ -3,7 +3,6 @@
   background-color: #1a1a1a;
   box-shadow: 0 20px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  overflow: hidden;
   transition: all 0.3s ease;
   max-width: 800px;
   margin: 0 auto;
