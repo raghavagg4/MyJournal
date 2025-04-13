@@ -58,7 +58,7 @@ def go_deeper():
     "1. Directly relate to the specific content and emotions expressed.\n"
     "2. Encourage exploration of underlying thoughts, feelings, or motivations.\n"
     "3. Aknowledge the user's emotions, thoughts, and feelings.\n"
-    "4. Keep the question simple and concise (no more than 10 words).\n"
+    "4. Keep the question simple and concise (no more than 15 words).\n"
     "5. If it helps, try to give user a situation to relfect on\n"
     f"Journal entry: {text}\n")
 
