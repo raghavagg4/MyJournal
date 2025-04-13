@@ -90,7 +90,8 @@ def get_perspective():
 
         # Create a refined prompt to generate an alternative perspective
         prompt = (
-    "You are an empathetic perspective-giving assistant helping users see different viewpoints about their journal entries. "
+    "You are an empathetic perspective-giving assistant helping users see different viewpoints about their journal entries."
+    "You guide the user, show them the way, give them wise advice."
     "Given the following journal entry, provide one concise alternative perspective or insight that might help the user. "
     "The perspective must:\n"
     "1. Offer a compassionate, alternative way of looking at the situation.\n"
@@ -106,4 +107,38 @@ def get_perspective():
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@ai.route('/get-whispers', methods=["GET", "POST"])
+@login_required
+def get_whispers():
+    try:
+        # Get the text from either GET or POST request
+        if request.method == "GET":
+            text = request.args.get('text', '')
+        else:  # POST request
+            data = request.get_json()
+            text = data.get('text', '')
+
+        # Initialize Gemini API with the same model as other routes
+        model = genai.GenerativeModel('gemini-2.0-flash-lite')
+
+        # Create a prompt for the Gemini API - Updated for "Get Direction"
+        prompt = f"""You are a thoughtful guide helping someone journal. Based on their previous entry (if any), ask a fresh, engaging question that encourages reflection and exploration of new topics.
+Just aks the question. don't include anything else in your repsonse.
+        Previous Entry:
+        {text}
+
+        If the previous entry is empty, respond with something like "How was your day today?"
+        Otherwise, generate a new question that explores a different aspect or topic than what was discussed before.
+
+        Response should be a single clear question that invites reflection. Just aks the question. don't include anything else in your repsonse. """
+
+        # Generate response
+        response = model.generate_content(prompt)
+
+        return jsonify({'direction': response.text})
+
+    except Exception as e:
+        print(f"Error in get_whispers: {str(e)}")
+        return jsonify({'error': 'Failed to generate whispers'}), 500
 

@@ -249,14 +249,9 @@
                     <span class="text-white ml-2 font-medium">Get Perspective</span>
                 </button>
 
-                <button onclick="alert('Button 3 clicked')" class="rounded-full bg-red-600 p-2 shadow-lg hover:bg-red-700 transition-all flex items-center" title="Button 3" style="min-width: 150px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="#C5A880" viewBox="0 0 24 24" width="30" height="30">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
-                                 10-4.48 10-10S17.52 2 12 2zm0 18
-                                 c-4.41 0-8-3.59-8-8s3.59-8 8-8
-                                 8 3.59 8 8-3.59 8-8 8z"/>
-                    </svg>
-                    <span class="text-white ml-2 font-medium">Button 3</span>
+                <button onclick="insertWhispersPrompt()" class="rounded-full bg-red-600 p-2 shadow-lg hover:bg-red-700 transition-all flex items-center" title="Get Direction" style="min-width: 150px;">
+                    <img src="{{ url_for('static', filename='logo/image.png') }}" alt="Get Direction" style="width: 40px; height: 40px;">
+                    <span class="text-white ml-2 font-medium">Get Direction</span>
                 </button>
             </div>
         </div>
@@ -550,6 +545,76 @@
                                 bubble.remove();
                             }, 3000);
                         }
+                    }
+                }
+
+                window.insertWhispersPrompt = async function() {
+                    if (!quill) return;
+                    const range = quill.getSelection(true);
+                    if (!range) {
+                        quill.focus();
+                        return;
+                    }
+
+                    // Get the text for context
+                    const textForPrompt = quill.getText(); // Use full text like perspective
+                    const timestamp = new Date().getTime();
+
+                    try {
+                        // Call the API to get whispers (now direction)
+                        const response = await fetch(`/get-whispers?text=${encodeURIComponent(textForPrompt)}&t=${timestamp}`);
+                        const data = await response.json();
+
+                        if (data.error) {
+                            console.error('Error from /get-whispers API:', data.error);
+                            // Optionally, insert an error message into the editor
+                            // quill.insertText(range.index + range.length, '\nError getting direction.', { 'color': '#ef4444' });
+                            return;
+                        }
+
+                        const directionText = data.direction.trim(); // Use new 'direction' key
+
+                        // Determine the insert index (end of current selection or cursor position)
+                        const insertIndex = range.index + range.length;
+
+                        // Check if the insertion point is at the beginning of a line
+                        const isAtStartOfLine = insertIndex === 0 || quill.getText(insertIndex - 1, 1) === '\n';
+
+                        let textToInsert = '';
+                        let formatIndex = 0;
+                        let finalCursorOffset = 0;
+
+                        if (isAtStartOfLine) {
+                            // Cursor is on a fresh line, insert directly
+                            textToInsert = directionText;
+                            formatIndex = insertIndex;
+                            finalCursorOffset = directionText.length;
+                        } else {
+                            // Cursor is mid-line, insert on the next line
+                            textToInsert = '\n' + directionText;
+                            formatIndex = insertIndex + 1;
+                            finalCursorOffset = 1 + directionText.length;
+                        }
+
+                        // Insert the text
+                        quill.insertText(insertIndex, textToInsert);
+
+                        // Apply the H1 format and matte gold color (like Go Deeper)
+                        quill.formatLine(formatIndex, 1, 'header', 1); // Apply H1 format to the line
+                        quill.formatText(formatIndex, directionText.length, 'color', '#C5A880'); // Apply color
+
+                        // Move the cursor after the prompt
+                        quill.setSelection(insertIndex + finalCursorOffset, 0);
+                        quill.focus(); // Ensure editor remains focused
+
+                    } catch (error) {
+                        console.error('Error getting or displaying direction:', error);
+                        // Optionally, insert a fallback/error message
+                        // const fallbackText = 'Could not get direction at this time.';
+                        // let textToInsert = isAtStartOfLine ? fallbackText + '\n' : '\n' + fallbackText + '\n';
+                        // quill.insertText(insertIndex, textToInsert, { 'color': '#ef4444' });
+                        // quill.setSelection(insertIndex + textToInsert.length, 0);
+                        // quill.focus();
                     }
                 }
 
