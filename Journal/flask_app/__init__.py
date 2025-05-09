@@ -26,6 +26,7 @@ bcrypt = Bcrypt()
 
 from .users.routes import users
 from .ai.routes import ai
+from .routes import main
 
 def custom_404(e):
     return render_template("404.html"), 404
@@ -34,7 +35,9 @@ def custom_500(e):
     return render_template("500.html"), 500
 
 def create_app(test_config=None):
-    app = Flask(__name__)
+    app = Flask(__name__,
+                static_folder='static',
+                static_url_path='/static')
 
     # Configure logging
     logging.basicConfig(level=logging.INFO)
@@ -66,6 +69,7 @@ def create_app(test_config=None):
     # Register blueprints
     app.register_blueprint(users)
     app.register_blueprint(ai)
+    app.register_blueprint(main)
 
     # Register error handlers
     app.register_error_handler(404, custom_404)
