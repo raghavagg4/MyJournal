@@ -1,7 +1,7 @@
-from flask import Blueprint, redirect, url_for, render_template, flash, request, jsonify
+from flask import Blueprint, redirect, url_for, render_template, flash, request, jsonify, session
 from flask_login import current_user, login_required, login_user, logout_user
 from .. import bcrypt, db
-from ..forms import RegistrationForm, LoginForm, JournalEntryForm
+from ..forms import RegistrationForm, LoginForm, JournalEntryForm, AdminLoginForm
 from ..models import User, JournalEntry, APICallCounter
 from datetime import datetime
 
@@ -201,6 +201,17 @@ def logout():
 
 @users.route("/admin", methods=["GET", "POST"])
 def admin():
+    # Check if admin is already logged in
+    if not session.get('admin_logged_in'):
+        form = AdminLoginForm()
+        if form.validate_on_submit():
+            if form.username.data == "Arjun" and form.password.data == "Raghav":
+                session['admin_logged_in'] = True
+                return redirect(url_for('users.admin'))
+            else:
+                flash("Invalid admin credentials")
+        return render_template("admin_login.html", form=form)
+
     all_entries = None
     api_call_count = None
 
@@ -249,3 +260,8 @@ def admin():
                 flash(f"Error deleting user: {str(e)}", "error")
 
     return render_template("admin.html", all_entries=all_entries, api_call_count=api_call_count)
+
+@users.route("/admin/logout")
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    return redirect(url_for('users.admin'))

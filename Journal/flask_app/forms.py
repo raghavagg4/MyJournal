@@ -43,6 +43,15 @@ class LoginForm(FlaskForm):
     )
     submit = SubmitField("Login")
 
+class AdminLoginForm(FlaskForm):
+    username = StringField(
+        "Username", validators=[InputRequired(), Length(min=1, max=40)]
+    )
+    password = PasswordField(
+        "Password", validators=[InputRequired()]
+    )
+    submit = SubmitField("Login")
+
 class JournalEntryForm(FlaskForm):
     title = StringField(
         "Title", validators=[InputRequired(), Length(min=1, max=100)]
