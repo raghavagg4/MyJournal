@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-from ..models import JournalEntry  # Updated import to use JournalEntry instead of Journal
+from ..models import JournalEntry, APICallCounter  # Added APICallCounter import
 from cryptography.fernet import InvalidToken # Import the specific exception
 
 load_dotenv()
@@ -18,6 +18,10 @@ genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 def ai_assistant():
     if request.method == "POST":
         try:
+            # Check API call limit
+            if not APICallCounter.increment_and_check():
+                return jsonify({"error": "API calls reached"}), 429
+
             # Initialize the model
             model = genai.GenerativeModel('gemini-2.0-flash-lite-preview')
 
@@ -39,6 +43,10 @@ def ai_assistant():
 @login_required
 def go_deeper():
     try:
+        # Check API call limit
+        if not APICallCounter.increment_and_check():
+            return jsonify({"error": "API calls reached"}), 429
+
         # Initialize the model with the latest version
         model = genai.GenerativeModel('gemini-2.0-flash-lite')
 
@@ -46,8 +54,7 @@ def go_deeper():
         if request.method == "GET":
             text = request.args.get('text', '')
         else:
-            data = request.get_json()
-            text = data.get('text', '')
+            text = request.form.get('text', '')
 
         if not text:
             return jsonify({"error": "No text provided"}), 400
@@ -77,6 +84,10 @@ def go_deeper():
 @login_required
 def get_perspective():
     try:
+        # Check API call limit
+        if not APICallCounter.increment_and_check():
+            return jsonify({"error": "API calls reached"}), 429
+
         # Initialize the model with the latest version
         model = genai.GenerativeModel('gemini-2.0-flash-lite')
 
@@ -142,6 +153,10 @@ def get_perspective():
 @login_required
 def get_whispers():
     try:
+        # Check API call limit
+        if not APICallCounter.increment_and_check():
+            return jsonify({"error": "API calls reached"}), 429
+
         # Get the text from either GET or POST request
         if request.method == "GET":
             text = request.args.get('text', '')

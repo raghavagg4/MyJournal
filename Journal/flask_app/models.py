@@ -85,3 +85,23 @@ class JournalEntry(db.Document):
         decrypted_content = cipher.decrypt(self.content.encode())
         return decrypted_content.decode()
 
+class APICallCounter(db.Document):
+    counter = db.IntField(default=0)
+    last_updated = db.DateTimeField(default=datetime.now)
+
+    meta = {
+        'collection': 'api_call_counter'
+    }
+
+    @classmethod
+    def increment_and_check(cls):
+        counter = cls.objects.first()
+        if not counter:
+            counter = cls()
+
+        counter.counter += 1
+        counter.last_updated = datetime.now()
+        counter.save()
+
+        return counter.counter <= 200
+

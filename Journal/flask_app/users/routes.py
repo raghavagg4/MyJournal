@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, url_for, render_template, flash, request,
 from flask_login import current_user, login_required, login_user, logout_user
 from .. import bcrypt, db
 from ..forms import RegistrationForm, LoginForm, JournalEntryForm
-from ..models import User, JournalEntry
+from ..models import User, JournalEntry, APICallCounter
 from datetime import datetime
 
 users = Blueprint("users", __name__)
@@ -202,6 +202,14 @@ def logout():
 @users.route("/admin", methods=["GET", "POST"])
 def admin():
     all_entries = None
+    api_call_count = None
+
+    try:
+        # Get API call count
+        counter = APICallCounter.objects.first()
+        api_call_count = counter.counter if counter else 0
+    except Exception as e:
+        flash(f"Error fetching API call count: {str(e)}", "error")
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -222,7 +230,7 @@ def admin():
                 email = request.form.get("email")
                 if not email:
                     flash("Please provide an email address", "error")
-                    return render_template("admin.html", all_entries=all_entries)
+                    return render_template("admin.html", all_entries=all_entries, api_call_count=api_call_count)
 
                 collections = db.connection.get_database(db.get_db().name).list_collection_names()
                 deleted = False
@@ -240,4 +248,4 @@ def admin():
             except Exception as e:
                 flash(f"Error deleting user: {str(e)}", "error")
 
-    return render_template("admin.html", all_entries=all_entries)
+    return render_template("admin.html", all_entries=all_entries, api_call_count=api_call_count)
