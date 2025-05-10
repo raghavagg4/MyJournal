@@ -11,6 +11,9 @@
         #editor-container {
             border: none !important;
             overflow-y: auto;
+            height: calc(100vh - 200px) !important;
+            position: relative;
+            margin-top: -2px; /* Reduced from -20px to -10px to move it down slightly */
         }
         .ql-toolbar.ql-snow {
             border: none !important;
@@ -23,15 +26,20 @@
             position: absolute;
             right: 0;
             z-index: 10;
+            margin-top: -2px; /* Match the container's margin */
         }
         .ql-container.ql-snow {
             border: none !important;
+            height: calc(100% - 42px) !important;
+            overflow-y: auto;
+            margin-top: 42px;
         }
         .ql-editor {
-            padding: 12px 0;
+            padding: 0; /* Remove padding */
             font-family: 'Montserrat', sans-serif !important;
             font-size: 1.25rem !important;
             line-height: 1.6 !important;
+            min-height: 100%;
         }
 
         /* Perspective Bubble Styles */
@@ -183,6 +191,16 @@
         }
         #menu-threads path.menu-thread.visible {
             opacity: 0.7;
+        }
+
+        .journal-content-wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .journal-button-wrapper {
+            margin-top: 20px;
+            padding-bottom: 20px;
         }
     </style>
 
