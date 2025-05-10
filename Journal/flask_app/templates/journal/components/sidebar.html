@@ -1,6 +1,13 @@
 {% macro render_sidebar(entries, selected_entry) %}
 <div class="sidebar" id="sidebar-panel" style="padding-top: 0;">
   <div style="height: 30px;"></div>
+  <button id="close-sidebar" class="close-sidebar-btn" aria-label="Toggle sidebar">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
   <div class="sidebar-logo m-4 flex items-center gap-3" style="margin-top: 0; margin-left: 1.5rem;">
     <img src="{{ url_for('static', filename='assets/logo-white.svg') }}" alt="Polaris Logo" style="width: 60px; height: 60px;">
     <span class="text-white text-4xl font-medium">Polaris</span>
@@ -28,4 +35,12 @@
     {% endif %}
   </div>
 </div>
+
+<button id="open-sidebar" class="open-sidebar-btn" aria-label="Open sidebar" style="display: none;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
 {% endmacro %}
