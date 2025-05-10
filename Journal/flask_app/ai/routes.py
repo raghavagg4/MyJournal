@@ -124,17 +124,17 @@ def get_perspective():
         # Create a refined prompt to generate an alternative perspective, including past entries
         prompt = (
            "You are an empathetic assistant helping users gain new, compassionate insights from their journal entries. "
-           "Review the current journal entry provided below, along with the user's past. Identify relevant patterns from past entries that align closely with the current situation. "
-            "If there are no relevant patterns or if no past data is available, do not mention or reference past entries. "
-           "Using these insights, provide one concise perspective or insight about the current entry. Your response must:\n"
+           "Review the current journal entry provided below, along with the user's past entries if available. "
+           "IMPORTANT: If the past entries section is empty, or if the past entries are not relevant to the current situation, "
+           "DO NOT mention or reference past entries at all. Only use past entries if they provide meaningful context "
+           "that directly relates to the current situation.\n"
+           "Your response must:\n"
            "1. Offer a compassionate viewpoint that reframes the situation positively or constructively. Could be both positive and negative.\n"
-           "2. Reference relevant patterns or themes from the user's past. Only chose to include the most relevant ones with the current situation.\n"
+           "2. Only reference past entries if they are highly relevant and provide meaningful context to the current situation.\n"
            "Keep your response under 100 words.\n\n"
            f"CURRENT JOURNAL ENTRY:\n{text}\n\n"
            f"---  USER PAST ---\n{all_entries_text}\n--- USER PAST ---"
        )
-
-
 
         # Generate responses
         response = model.generate_content(prompt)
