@@ -21,24 +21,10 @@
         <div class="form-group review-input">
             {{ form.username.label }}
             {{ form.username(class="form-content") }}
-            {% if form.username.errors %}
-                <div class="text-red-500 text-sm mt-1">
-                    {% for error in form.username.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
         </div>
         <div class="form-group review-input">
             {{ form.password.label }}
             {{ form.password(class="form-content") }}
-            {% if form.password.errors %}
-                <div class="text-red-500 text-sm mt-1">
-                    {% for error in form.password.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
         </div>
         {{ form.submit(class="review-button") }}
     </form>
