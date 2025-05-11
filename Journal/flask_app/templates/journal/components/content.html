@@ -429,6 +429,13 @@
                 window.updateContentField = function() {
                     if (!quill) return;
                     const hiddenInput = document.getElementById('hidden-content');
+                    const titleInput = document.querySelector('.journal-title-input');
+
+                    // Set default title if empty
+                    if (!titleInput.value.trim()) {
+                        titleInput.value = "My Polaris";
+                    }
+
                     hiddenInput.value = quill.root.innerHTML;
                     hiddenInput.form.submit();
                 }
