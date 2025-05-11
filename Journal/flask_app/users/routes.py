@@ -226,14 +226,24 @@ def admin():
         action = request.form.get("action")
         if action == "show_all_entries":
             try:
-                collections = db.connection.get_database(db.get_db().name).list_collection_names()
-                all_entries = {}
+                # Get all users
+                users = User.objects.all()
+                all_entries = {"users": []}
 
-                for collection_name in collections:
-                    collection = db.connection.get_database(db.get_db().name)[collection_name]
-                    entries = list(collection.find({"email": {"$exists": True}}, {"email": 1, "_id": 0}))
-                    if entries:
-                        all_entries[collection_name] = entries
+                for user in users:
+                    # Find the most recent journal entry for this user
+                    last_entry = JournalEntry.objects(user=user).order_by('-updated_at').first()
+                    # Find the first journal entry for this user
+                    first_entry = JournalEntry.objects(user=user).order_by('created_at').first()
+
+                    user_data = {
+                        'username': user.username,
+                        'email': user.email,
+                        'last_active': last_entry.updated_at if last_entry else None,
+                        'first_active': first_entry.created_at if first_entry else None
+                    }
+                    all_entries["users"].append(user_data)
+
             except Exception as e:
                 flash(f"Error fetching entries: {str(e)}", "error")
         elif action == "delete_user":

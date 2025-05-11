@@ -19,8 +19,9 @@
     {% else %}
         <title>My Journal</title>
     {% endif %}
+    {% block head %}{% endblock %}
 </head>
-<body>
+<body{% if admin_page %} class="admin-body"{% endif %}>
     {% block header %}
     <h1>My Journal App</h1>
     {% endblock %}

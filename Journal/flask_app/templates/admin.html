@@ -1,153 +1,141 @@
+{% set admin_page = True %}
 {% extends "header.html" %}
 
-<style>
-  @layer components {
-    .admin-card {
-      @apply bg-white rounded-lg shadow-sm p-8 transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:shadow-md;
-    }
-    .admin-button {
-      @apply w-full px-6 py-4 rounded-lg font-semibold text-white transition-all duration-300
-             shadow-md hover:shadow-xl active:shadow-inner
-             transform hover:translate-y-[-2px] active:translate-y-[1px]
-             focus:outline-none focus:ring-2 focus:ring-offset-2
-             relative overflow-hidden
-             flex items-center justify-center gap-2;
-    }
-    .admin-button::before {
-      content: '';
-      @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-300;
-    }
-    .admin-button:hover::before {
-      @apply opacity-10;
-    }
-    .admin-button-primary {
-      @apply bg-gradient-to-r from-blue-500 to-blue-600
-             focus:ring-blue-500
-             border-b-4 border-blue-700;
-    }
-    .admin-button-danger {
-      @apply bg-gradient-to-r from-red-500 to-red-600
-             focus:ring-red-500
-             border-b-4 border-red-700;
-    }
-    .admin-input {
-      @apply w-full px-5 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white;
-    }
-    .table-header {
-      @apply px-8 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50;
-    }
-    .table-cell {
-      @apply px-8 py-4 whitespace-nowrap text-sm text-gray-600;
-    }
-    .gradient-header {
-      @apply bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 rounded-xl shadow-lg p-10 mb-8 text-white relative overflow-hidden;
-    }
-    .gradient-header::before {
-      content: '';
-      @apply absolute inset-0 bg-white opacity-10 transform rotate-12 scale-150;
-    }
-    .api-counter {
-      @apply bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 rounded-xl shadow-lg p-6 mb-8 text-white relative overflow-hidden;
-    }
-    .api-counter::before {
-      content: '';
-      @apply absolute inset-0 bg-white opacity-10 transform rotate-12 scale-150;
-    }
-  }
-</style>
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="flex justify-between items-center mb-4">
-        <h1>Admin Panel</h1>
-    </div>
-
-    <div class="container mx-auto px-6 py-10">
-        <div class="max-w-5xl mx-auto">
-            <!-- Header Section -->
-            <div class="gradient-header">
-                <div class="relative z-10">
-                    <h2 class="text-3xl font-bold mb-3">Admin Dashboard</h2>
-                    <p class="text-blue-50 text-lg opacity-90">Manage your application's data and users</p>
-                </div>
+<div class="admin-body">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">Admin Panel</h1>
+        </div>
+        <div class="api-counter">
+            <h3>Gemini API Usage</h3>
+            <p>Current API Calls: <strong>{{ api_call_count }}</strong> / 200</p>
+            <div class="progress-bar">
+                {% set progress_width = (api_call_count / 200 * 100)|round %}
+                <div class="progress-bar-fill" style="width: {{ progress_width }}%"></div>
             </div>
-
-            <!-- API Call Counter Section -->
-            <div class="api-counter">
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-bold mb-2">Gemini API Usage</h3>
-                    <p class="text-green-50 text-lg">
-                        Current API Calls: <span class="font-bold">{{ api_call_count }}</span> / 200
-                    </p>
-                    <div class="w-full bg-white/20 rounded-full h-2.5 mt-4">
-                        <div class="bg-white h-2.5 rounded-full" style="width: {{ (api_call_count / 200 * 100)|round }}%"></div>
-                    </div>
-                </div>
+        </div>
+        <div class="admin-card">
+            <form method="POST" action="{{ url_for('users.admin') }}" class="admin-form">
+                <input type="hidden" name="action" value="show_all_entries">
+                <button type="submit" class="admin-button admin-button-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    Show All Entries
+                </button>
+            </form>
+        </div>
+        {% if all_entries %}
+        <div class="admin-card">
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: #e5e7eb; margin-bottom: 1.5rem; letter-spacing: -0.5px;">Database Entries</h3>
+            <div style="overflow-x: auto;">
+                <table class="admin-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th class="sortable" data-sort="first_active">First Active <span class="sort-icon">↕</span></th>
+                            <th class="sortable" data-sort="last_active">Last Active <span class="sort-icon">↕</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_entries.users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td data-sort-value="{{ user.first_active.timestamp() if user.first_active else 0 }}">{{ user.first_active.strftime('%B %d, %Y') if user.first_active else 'Never' }}</td>
+                            <td data-sort-value="{{ user.last_active.timestamp() if user.last_active else 0 }}">{{ user.last_active.strftime('%B %d, %Y') if user.last_active else 'Never' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-
-            <!-- Actions Section -->
-            <div class="space-y-8">
-                <!-- Show Entries Card -->
-                <div class="admin-card">
-                    <form method="POST" action="{{ url_for('users.admin') }}">
-                        <input type="hidden" name="action" value="show_all_entries">
-                        <button type="submit" class="admin-button admin-button-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                            </svg>
-                            Show All Entries
-                        </button>
-                    </form>
+        </div>
+        {% endif %}
+        <div class="admin-card">
+            <form method="POST" action="{{ url_for('users.admin') }}" class="admin-form">
+                <input type="hidden" name="action" value="delete_user">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" required
+                           class="admin-input"
+                           placeholder="Enter email to delete">
                 </div>
-
-                <!-- Results Section -->
-                {% if all_entries %}
-                <div class="admin-card">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Database Entries</h3>
-                    <div class="overflow-x-auto rounded-lg border border-gray-200">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="table-header rounded-tl-lg">Collection</th>
-                                    <th scope="col" class="table-header rounded-tr-lg">Email</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                {% for collection, entries in all_entries.items() %}
-                                    {% for entry in entries %}
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                        <td class="table-cell font-medium">{{ collection }}</td>
-                                        <td class="table-cell">{{ entry.email }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Delete User Card -->
-                <div class="admin-card">
-                    <form method="POST" action="{{ url_for('users.admin') }}" class="space-y-6">
-                        <input type="hidden" name="action" value="delete_user">
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                            <input type="email" id="email" name="email" required
-                                   class="admin-input"
-                                   placeholder="Enter email to delete">
-                        </div>
-                        <button type="submit" class="admin-button admin-button-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                            Delete User
-                        </button>
-                    </form>
-                </div>
-            </div>
+                <button type="submit" class="admin-button admin-button-danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Delete User
+                </button>
+            </form>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.getElementById('usersTable');
+    const headers = table.querySelectorAll('th.sortable');
+    let currentSort = {
+        column: null,
+        direction: 'asc'
+    };
+
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.dataset.sort;
+
+            // Update sort direction
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            // Update sort icons
+            headers.forEach(h => {
+                const icon = h.querySelector('.sort-icon');
+                if (h.dataset.sort === column) {
+                    icon.textContent = currentSort.direction === 'asc' ? '↑' : '↓';
+                } else {
+                    icon.textContent = '↕';
+                }
+            });
+
+            // Sort the table
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                // Find the correct cell based on the column being sorted
+                const columnIndex = Array.from(header.parentElement.children).indexOf(header);
+                const aCell = a.children[columnIndex];
+                const bCell = b.children[columnIndex];
+
+                // Get the timestamp values
+                const aValue = parseFloat(aCell.dataset.sortValue) || 0;
+                const bValue = parseFloat(bCell.dataset.sortValue) || 0;
+
+                // Handle 'Never' cases (value of 0)
+                if (aValue === 0 && bValue === 0) return 0;
+                if (aValue === 0) return currentSort.direction === 'asc' ? 1 : -1;
+                if (bValue === 0) return currentSort.direction === 'asc' ? -1 : 1;
+
+                // Normal numeric comparison
+                return currentSort.direction === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+
+            // Reorder the rows
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+});
+</script>
 {% endblock %}
